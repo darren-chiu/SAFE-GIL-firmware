@@ -9,6 +9,10 @@
 
 #define DEBUG_MODULE "safe-gil"
 
+// Defining the below runs the imitation policy. 
+//Otherwise it is for data colleciton
+#define RUN_EXPERIMENT
+
 #include "debug.h"
 #include "log.h"
 #include "param.h"
@@ -55,17 +59,153 @@ bool controllerOutOfTreeTest() {
 
 void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const sensorData_t *sensors, const state_t *state, const uint32_t tick) {
   count++;
-  if (!isToFStale) {
-		#ifdef TOF_ENABLE
-			isToFStale = process_obst(state, obstacle_inputs, (uint16_t* )tof_input, (uint8_t* ) tof_status);
-		#endif
-	}
   if (count == 250) {
     DEBUG_PRINT("ToF: (%f,%f,%f,%f,%f,%f,%f,%f)\n", obstacle_inputs[0], obstacle_inputs[1], obstacle_inputs[2], obstacle_inputs[3], obstacle_inputs[4], obstacle_inputs[5], obstacle_inputs[6], obstacle_inputs[7]);
     count = 0;
   }
-  // Call the PID controller 
-  controllerPid(control, setpoint, sensors, state, tick);
+
+  #ifdef RUN_EXPERIMENT
+    control->controlMode = controlModeForce;
+    bool comm_status;
+
+    struct mat33 rot;
+    struct mat33 rot_desired;
+
+    // Orientation
+    struct quat q = mkquat(state->attitudeQuaternion.x, 
+                state->attitudeQuaternion.y, 
+                state->attitudeQuaternion.z, 
+                state->attitudeQuaternion.w);
+    rot = quat2rotmat(q);
+
+    struct quat q_desired = mkquat(setpoint->attitudeQuaternion.x, 
+                setpoint->attitudeQuaternion.y, 
+                setpoint->attitudeQuaternion.z, 
+                setpoint->attitudeQuaternion.w);
+    rot_desired = quat2rotmat(q_desired);
+
+
+    // angular velocity
+    float omega_roll = radians(sensors->gyro.x);
+    float omega_pitch = radians(sensors->gyro.y);
+    float omega_yaw = radians(sensors->gyro.z);
+
+    setpoint_array[0] = setpoint->position.x;
+    setpoint_array[1] = setpoint->position.y;
+    setpoint_array[2] = setpoint->position.z;
+
+    state_array[0] = state->position.x - setpoint->position.x;
+    state_array[1] = state->position.y - setpoint->position.y;
+    state_array[2] = state->position.z - setpoint->position.z;
+
+    #ifdef DEBUG_LOCALIZATION
+      if (count == 750) {
+        DEBUG_PRINT("Estimation: (%f,%f,%f)\n", state->position.x,state->position.y,state->position.z);
+        // DEBUG_PRINT("Desired: (%f,%f,%f)\n", setpoint->position.x,setpoint->position.y,setpoint->position.z);
+        // DEBUG_PRINT("ERROR: (%f,%f,%f)\n", state_array[0], state_array[1], state_array[2]);
+        // DEBUG_PRINT("ToF: (%f,%f,%f,%f)\n", obstacle_inputs[8], obstacle_inputs[9], obstacle_inputs[10], obstacle_inputs[11]);
+        // DEBUG_PRINT("Thrusts: (%i,%i,%i,%i)\n", control->normalizedForces[0], control->normalizedForces[1], control->normalizedForces[2], control->normalizedForces[3]);
+        count = 0;
+      }
+      count++;
+    #endif
+
+    if (REL_VEL) {
+      state_array[3] = state->velocity.x - setpoint->velocity.x;
+      state_array[4] = state->velocity.y - setpoint->velocity.y;
+      state_array[5] = state->velocity.z - setpoint->velocity.z;
+    } else {
+      state_array[3] = state->velocity.x;
+      state_array[4] = state->velocity.y;
+      state_array[5] = state->velocity.z;
+    }
+    // TODO: ADD RELATIVE ROTATION MATRIX
+    if (REL_ROT) {
+      state_array[6] = rot.m[0][0] - rot_desired.m[0][0];
+      state_array[7] = rot.m[0][1] - rot_desired.m[0][1];
+      state_array[8] = rot.m[0][2] - rot_desired.m[0][2];
+      state_array[9] = rot.m[1][0] - rot_desired.m[1][0];
+      state_array[10] = rot.m[1][1] - rot_desired.m[1][1];
+      state_array[11] = rot.m[1][2] - rot_desired.m[1][2];
+      state_array[12] = rot.m[2][0] - rot_desired.m[2][0];
+      state_array[13] = rot.m[2][1] - rot_desired.m[2][1];
+      state_array[14] = rot.m[2][2] - rot_desired.m[2][2];
+    } else {
+      state_array[6] = rot.m[0][0];
+      state_array[7] = rot.m[0][1];
+      state_array[8] = rot.m[0][2];
+      state_array[9] = rot.m[1][0];
+      state_array[10] = rot.m[1][1];
+      state_array[11] = rot.m[1][2];
+      state_array[12] = rot.m[2][0];
+      state_array[13] = rot.m[2][1];
+      state_array[14] = rot.m[2][2];
+    }
+
+    if (REL_XYZ) {
+      // rotate pos and vel
+      struct vec rot_pos = mvmul(mtranspose(rot), mkvec(state_array[0], state_array[1], state_array[2]));
+      struct vec rot_vel = mvmul(mtranspose(rot), mkvec(state_array[3], state_array[4], state_array[5]));
+
+      state_array[0] = rot_pos.x;
+      state_array[1] = rot_pos.y;
+      state_array[2] = rot_pos.z;
+
+      state_array[3] = rot_vel.x;
+      state_array[4] = rot_vel.y;
+      state_array[5] = rot_vel.z;
+    }
+
+    setpoint_array[3] = radians(setpoint->attitudeRate.roll);
+    setpoint_array[4] = radians(setpoint->attitudeRate.pitch);
+    setpoint_array[5] = radians(setpoint->attitudeRate.yaw);
+
+    if (REL_OMEGA) {
+      state_array[15] = omega_roll - setpoint_array[4];
+      state_array[16] = omega_pitch - setpoint_array[5];
+      state_array[17] = omega_yaw - setpoint_array[6];
+    } else {
+      state_array[15] = omega_roll;
+      state_array[16] = omega_pitch;
+      state_array[17] = omega_yaw;
+    }
+
+    if (!isToFStale) {
+      #ifdef TOF_ENABLE
+        isToFStale = process_obst(state, obstacle_inputs, (uint16_t* )tof_input, (uint8_t* ) tof_status);
+        obstacleEmbedder(obstacle_inputs);
+      #endif
+    }
+
+    #ifdef MULTI_DRONE_ENABLE
+      updateNeighborInputs(state, neighbor_inputs);
+      neighborEmbedder(neighbor_inputs);  
+    #endif
+
+
+    networkEvaluate(&control_nn, state_array);
+
+    // convert thrusts to normalized Thrust
+    uint16_t iThrust_0, iThrust_1, iThrust_2, iThrust_3; 
+    normalizeThrust(&control_nn, &iThrust_0, &iThrust_1, &iThrust_2, &iThrust_3);
+
+    if (setpoint->mode.z == modeDisable) {
+      control->normalizedForces[0] = 0;
+      control->normalizedForces[1] = 0;
+      control->normalizedForces[2] = 0;
+      control->normalizedForces[3] = 0;
+    } else {
+      control->normalizedForces[0] = (uint16_t) thrust_coefficient * iThrust_0;
+      control->normalizedForces[1] = (uint16_t) thrust_coefficient * iThrust_1;
+      control->normalizedForces[2] = (uint16_t) thrust_coefficient * iThrust_2;
+      control->normalizedForces[3] = (uint16_t) thrust_coefficient * iThrust_3;
+    }
+  }
+  
+  #else
+    // Call the PID controller 
+    controllerPid(control, setpoint, sensors, state, tick);
+  #endif
 }
 
 
