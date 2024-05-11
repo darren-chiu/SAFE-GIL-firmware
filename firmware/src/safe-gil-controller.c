@@ -112,9 +112,9 @@ void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const s
 
 
       // angular velocity
-      float omega_roll = radians(sensors->gyro.x);
-      float omega_pitch = radians(sensors->gyro.y);
-      float omega_yaw = radians(sensors->gyro.z);
+      float omega_roll = sensors->gyro.x;
+      float omega_pitch = sensors->gyro.y;
+      float omega_yaw = sensors->gyro.z;
 
       // setpoint_array[0] = setpoint->position.x;
       // setpoint_array[1] = setpoint->position.y;
