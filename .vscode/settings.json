@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "obst_daq.h": "c"
+        "obst_daq.h": "c",
+        "network_evaluate_gil.h": "c"
     }
 }

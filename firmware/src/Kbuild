@@ -1,3 +1,4 @@
 obj-y += tof_api/
 obj-y += safe-gil-controller.o
 obj-y += obst_daq.o
+obj-y += network_evaluate_gil.o
