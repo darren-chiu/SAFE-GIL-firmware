@@ -138,8 +138,8 @@ void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const s
       state_array[7] = sin(radians(state->attitude.yaw));
       state_array[8] = cos(radians(state->attitude.yaw));
       state_array[9] = state->velocity.x - 0.8364401720725966;
-      state_array[10] = state->velocity.y - 0.03843474001030632;
-      state_array[11] = state->velocity.z;
+      state_array[10] = state->velocity.y;
+      state_array[11] = state->velocity.z - 0.03843474001030632;
       state_array[12] = (omega_roll + 0.28475793) / 25.70296269;
       state_array[13] = (omega_pitch + 0.17994721) / 22.50442717;
       state_array[14] = (omega_yaw + 0.7365864) / 1.83997706;
