@@ -73,6 +73,7 @@ float clip(float v, float min, float max) {
     if (v > max) return max;
     return v;
 }
+bool nn_controller_enable = false;
 
 void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const sensorData_t *sensors, const state_t *state, const uint32_t tick) {
   count++;
@@ -81,8 +82,15 @@ void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const s
     count = 0;
   }
 
+  
+
   #ifdef RUN_EXPERIMENT
-    if (state->position.z - 0.41 > 0.0 ){
+
+    if (!nn_controller_enable){
+      nn_controller_enable = state->position.z - 0.41 > 0.0;
+    }
+
+    if (nn_controller_enable) {
       control->controlMode = controlModeForce;
       // bool comm_status;
 
