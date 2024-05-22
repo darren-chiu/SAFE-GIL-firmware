@@ -1,6 +1,20 @@
 {
     "files.associations": {
         "obst_daq.h": "c",
-        "network_evaluate_gil.h": "c"
+        "network_evaluate_gil.h": "c",
+        "__config": "c",
+        "cstdio": "c",
+        "cwchar": "c",
+        "deque": "c",
+        "ios": "c",
+        "new": "c",
+        "optional": "c",
+        "stdexcept": "c",
+        "typeinfo": "c",
+        "variant": "c",
+        "vector": "c",
+        "algorithm": "c",
+        "stabilizer_types.h": "c",
+        "position_controller.h": "c"
     }
 }

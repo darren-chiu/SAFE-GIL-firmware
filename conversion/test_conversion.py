@@ -120,6 +120,10 @@ model.load_state_dict(checkpoint['model_state_dict'])
 for name, param in model.named_parameters():
     print(name, param.shape)
 
+# check the wheights of the model
+for name, param in model.named_parameters():
+    print(name, param)
+
 # Load Model
 # TODO: Model dimensions?
 #Don't think I need optimizer?

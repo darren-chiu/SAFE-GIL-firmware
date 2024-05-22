@@ -14,7 +14,8 @@
 
 // Defining the below runs the imitation policy. 
 //Otherwise it is for data colleciton
-#define RUN_EXPERIMENT
+// #define RUN_EXPERIMENT
+#define TOF_ENABLE
 
 #include "debug.h"
 #include "log.h"
@@ -25,10 +26,10 @@
 
 static int count = 0;
 
-static float state_array[23];
-static float thrust_mean[4] = {48054.22234259, 46984.33434234, 50876.45975656, 42471.35183533};
-// do the same thing for thrust std
-static float thrust_std[4] = {3781.97827489, 4069.80051149, 3844.66114359, 4089.51596848};
+// static float state_array[23];
+// static float thrust_mean[4] = {48054.22234259, 46984.33434234, 50876.45975656, 42471.35183533};
+// // do the same thing for thrust std
+// static float thrust_std[4] = {3781.97827489, 4069.80051149, 3844.66114359, 4089.51596848};
 
 static control_t_n control_nn;
 
@@ -77,9 +78,22 @@ bool nn_controller_enable = false;
 
 void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const sensorData_t *sensors, const state_t *state, const uint32_t tick) {
   count++;
+
+  // for (int i = 0; i < 23; i++) {
+  //   state_array[i] = 0.0;
+  // }
+  // networkEvaluate(&control_nn, state_array);
+
+  // for (int i = 0; i < 3000; i++) {
+  //   DEBUG_PRINT("Actions: (%f,%f,%f,%f)\n", control_nn.thrust_0, control_nn.thrust_1, control_nn.thrust_2, control_nn.thrust_3);
+    
+  // }
+
   if (count == 250) {
     DEBUG_PRINT("ToF: (%f,%f,%f,%f,%f,%f,%f,%f)\n", obstacle_inputs[0], obstacle_inputs[1], obstacle_inputs[2], obstacle_inputs[3], obstacle_inputs[4], obstacle_inputs[5], obstacle_inputs[6], obstacle_inputs[7]);
+    
     count = 0;
+    
   }
 
   
@@ -278,6 +292,12 @@ void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const s
   #else
     // Call the PID controller 
     controllerPid(control, setpoint, sensors, state, tick);
+    if (!isToFStale) {
+      #ifdef TOF_ENABLE
+        isToFStale = process_obst(state, obstacle_inputs, (uint16_t* )tof_input, (uint8_t* ) tof_status);
+        // obstacleEmbedder(obstacle_inputs);
+      #endif
+    }
   #endif
 }
 
