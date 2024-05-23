@@ -52,12 +52,6 @@ static uint16_t tof_input[OBST_DIM*OBST_DIM];
  */
 static uint8_t tof_status[OBST_DIM*OBST_DIM];
 
-/**
- * @brief The vector of horizontal values.
- * 
- */
-static float obstacle_inputs[OBST_DIM];
-
 void controllerOutOfTreeInit() {
 
   controllerPidInit();
