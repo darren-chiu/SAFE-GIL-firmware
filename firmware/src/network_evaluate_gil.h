@@ -58,7 +58,7 @@ typedef struct nn_output {
 	float out_0;
 	float out_1;
 	float out_2;
-}
+} nn_output;
 
 /**
  * @brief Propogates the neural network to generate thrust values.

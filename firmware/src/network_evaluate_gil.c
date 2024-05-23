@@ -1,4 +1,4 @@
-#include "network_evaluate.h"
+#include "network_evaluate_gil.h"
 
 static const int structure [4][2] = {{6, 16},{16, 16},{16, 16},{16, 3}};
 static float output_0[16];
