@@ -14,7 +14,7 @@ static const float mlp_2_bias[16] = {-0.030594386160373688,-0.17790132761001587,
 static const float mlp_4_bias[16] = {-0.150300994515419,-0.17387379705905914,-0.023398783057928085,0.30065256357192993,0.07091512531042099,0.23983627557754517,0.004512728191912174,0.16422833502292633,0.22834111750125885,-0.344899445772171,-0.08430131524801254,0.25016456842422485,-0.07276543974876404,-0.048578210175037384,0.12488396465778351,0.15720641613006592};
 static const float mlp_6_bias[3] = {0.044748105108737946,0.03759506717324257,0.08661577105522156};
 
-void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
+void networkEvaluate(struct struct *nn_output , const float *state_array) {
     for (int i = 0; i < structure[0][1]; i++) {
         output_0[i] = 0;
         for (int j = 0; j < structure[0][0]; j++) {
@@ -50,7 +50,7 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
         output_3[i] += mlp_6_bias[i];
     }
     
-    control_n->thrust_0 = output_3[0];
-    control_n->thrust_1 = output_3[1];
-    control_n->thrust_2 = output_3[2];
+    nn_output->out_0 = output_3[0];
+    nn_output->out_1 = output_3[1];
+    nn_output->out_2 = output_3[2];
 }
