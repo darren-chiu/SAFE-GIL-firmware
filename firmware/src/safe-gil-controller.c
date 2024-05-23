@@ -285,6 +285,12 @@ void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const s
     //     control->normalizedForces[3] = (uint16_t) thrust_coefficient * iThrust_3;
     //   }
     // }
+
+
+    // if ticks for position control
+    // get nn
+    // set setpoint
+    // run pid
     }
     else {
       controllerPid(control, setpoint, sensors, state, tick);

@@ -51,7 +51,6 @@ class MLP(nn.Module):
         mlp.append(nn.Linear(self.hidden_layer_list[-1], self.output_fc))
         self.mlp = nn.Sequential(*mlp)
 
-    # @torch.compile
     def forward(self, x):
         x = self.flatten(x)
         out = self.mlp(x)
@@ -92,9 +91,9 @@ def get_latest_checkpoint(path_to_search, str_to_search='_b'):
 # get these in iteration
 config = {}
 config['model_architecture'] = 'mlp'
-config['input_dim'] = 23 # 23 with the sensor readings, wout 15
-config['output_dim'] = 4
-config['hidden_layer_list'] = [16, 16, 16]
+config['input_dim'] = 6 # # 23 with the sensor readings, wout 15
+config['output_dim'] = 3
+config['hidden_layer_list'] = [16,16,16]
 config['activation'] = 'tanh'
 config['drop_prob'] = 0.0
 config['use_batch_norm'] = False
@@ -104,7 +103,7 @@ config['optimizer_name'] = 'adam'
 config['lr'] = 0.001
 config['l2_reg'] = 0.0001
 config['device'] = 'cpu'
-config['path_to_restore'] = 'conversion/[16,16,16]_tanh'
+config['path_to_restore'] = 'conversion/[16,16,16]_tanh_attitude' # 'conversion/[16,16,16]_tanh'
 
 model = MLP(config['input_dim'], config['output_dim'], config['hidden_layer_list'], config['activation'], config['drop_prob'], config['use_batch_norm'], config['model_verbose'])
 
@@ -124,9 +123,6 @@ for name, param in model.named_parameters():
 for name, param in model.named_parameters():
     print(name, param)
 
-# Load Model
-# TODO: Model dimensions?
-#Don't think I need optimizer?
 
 #Feed model into script
 generate_c_model(model, "test_model.c", "c_models/", testing=False)
