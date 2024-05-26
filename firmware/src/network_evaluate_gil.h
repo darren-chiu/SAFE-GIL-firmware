@@ -54,11 +54,12 @@ typedef struct control_t_n {
 	float thrust_3;	
 } control_t_n;
 
-typedef struct nn_output {
-	float out_0;
-	float out_1;
-	float out_2;
-}
+// typedef struct nn_output {
+// 	float out_0;
+// 	float out_1;
+// 	float out_2;
+// }
+
 
 /**
  * @brief Propogates the neural network to generate thrust values.

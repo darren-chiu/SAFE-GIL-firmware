@@ -1,7 +1,7 @@
 obj-y += tof_api/
-obj-y += obst_daq.o
+#obj-y += obst_daq.o
 obj-y += network_evaluate_gil.o
 # Low Level Control
-obj-y += network_evaluate_gil.o
+# obj-y += safe-gil-controller.o
 # High Level Setpoint
-obj-y += safe-gil-commander.o 
+obj-y += safe-gil-commander.o

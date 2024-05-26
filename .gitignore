@@ -86,3 +86,21 @@ ipython_config.py
 
 firmware/build
 .vscode
+
+
+
+*.o
+*.a
+*.out
+*.elf
+*.hex
+*.bin
+*.map
+*.lst
+*.lss
+*.sym
+*.eep
+*.srec
+*.d
+*.su
+*.d
