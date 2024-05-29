@@ -17,6 +17,7 @@
         "stabilizer_types.h": "c",
         "position_controller.h": "c",
         "locale": "c",
-        "commander.h": "c"
+        "commander.h": "c",
+        "cstdlib": "c"
     }
 }

@@ -32,29 +32,6 @@ uint8_t start = 0;
 #define DELAY_AFTER_LAUNCH 300  //ms 
 
 
-//   typedef struct setpoint_s {
-//   uint32_t timestamp;
-
-//   attitude_t attitude;      // deg
-//   attitude_t attitudeRate;  // deg/s
-//   quaternion_t attitudeQuaternion;
-//   float thrust;
-//   point_t position;         // m
-//   velocity_t velocity;      // m/s
-//   acc_t acceleration;       // m/s^2
-//   bool velocity_body;       // true if velocity is given in body frame; false if velocity is given in world frame
-
-//   struct {
-//     stab_mode_t x;
-//     stab_mode_t y;
-//     stab_mode_t z;
-//     stab_mode_t roll;
-//     stab_mode_t pitch;
-//     stab_mode_t yaw;
-//     stab_mode_t quat;
-//   } mode;
-// } setpoint_t;
-
 
 
 
@@ -246,7 +223,7 @@ void appMain() {
 
   float height = 0.41f;
 
-
+  float nn_input[6];
   
   // tof_init(&tof_config);
   
@@ -296,7 +273,7 @@ void appMain() {
 
 
         // getNNOutput(&control_n);
-        float nn_input[6];
+        
         nn_input[0] = getX();
         nn_input[1] = getY();
         nn_input[2] = getZ();
@@ -307,7 +284,7 @@ void appMain() {
         DEBUG_PRINT("State: %f, %f, %f, %f, %f, %f\n", nn_input[0], nn_input[1], nn_input[2], nn_input[3], nn_input[4], nn_input[5]);
 
 
-        if (counter > 300 || nn_input[0]>3.7f || nn_input[1]>1.0f || nn_input[2]>0.7f || nn_input[0]<-0.7f || nn_input[1]<-2.5f || nn_input[2]<-0.7f){
+        if (counter > 350 || nn_input[0]>3.75f || nn_input[1]>1.0f || nn_input[2]>0.7f || nn_input[0]<-0.7f || nn_input[1]<-2.5f || nn_input[2]<-0.7f){
           // stop the drone
           DEBUG_PRINT("STOPPING\n");
           for (int i = 0; i < 10; i++) {

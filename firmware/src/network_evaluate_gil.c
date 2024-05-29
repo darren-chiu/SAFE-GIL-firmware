@@ -1,5 +1,12 @@
 #include "network_evaluate_gil.h"
 
+
+
+
+// im agent wout observations traned for 1 obs pair
+
+
+
 static const int structure [4][2] = {{6, 16},{16, 16},{16, 16},{16, 3}};
 static float output_0[16];
 static float output_1[16];

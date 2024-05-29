@@ -104,3 +104,5 @@ firmware/build
 *.d
 *.su
 *.d
+
+*.png

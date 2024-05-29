@@ -56,6 +56,9 @@ deps_/Users/umut/projects/lab/crazyfile/SAFE-GIL-firmware/firmware/src/safe-gil-
   /Users/umut/projects/lab/crazyfile/crazyflie-firmware/vendor/FreeRTOS/include/mpu_wrappers.h \
   /Users/umut/projects/lab/crazyfile/crazyflie-firmware/vendor/FreeRTOS/include/task.h \
   /Users/umut/projects/lab/crazyfile/crazyflie-firmware/vendor/FreeRTOS/include/list.h \
+  /opt/homebrew/Cellar/gcc-arm-none-eabi/20200630/arm-none-eabi/include/stdlib.h \
+  /opt/homebrew/Cellar/gcc-arm-none-eabi/20200630/arm-none-eabi/include/machine/stdlib.h \
+  /opt/homebrew/Cellar/gcc-arm-none-eabi/20200630/arm-none-eabi/include/alloca.h \
   /Users/umut/projects/lab/crazyfile/crazyflie-firmware/src/modules/interface/log.h \
     $(wildcard include/config/debug/log/enable.h) \
   /Users/umut/projects/lab/crazyfile/crazyflie-firmware/src/modules/interface/param.h \
