@@ -324,7 +324,16 @@ static float GZ = 9.81f;
 float getValue(const float *state_array, float d_bound_i, float roll, float pitch){
   float value = 0.0f;
   struct control_t_n deepreach_output;
+
+  
+
   float next_state[6] = {state_array[0], state_array[1], state_array[2], state_array[3], state_array[4], state_array[5]};
+
+  // invert y and vy because of the coordinate system of reach
+  // state_array[1] = -state_array[1];
+  // state_array[4] = -state_array[4];
+  next_state[1] = -next_state[1];
+  next_state[4] = -next_state[4];
 
   
   // def dsdt( state, control):
@@ -339,18 +348,23 @@ float getValue(const float *state_array, float d_bound_i, float roll, float pitc
 
   // traj1[i+1, :] = traj1[i, :] + dsdt(traj1[i, :], control[i, :]) * dt
 
-  next_state[0] = state_array[0] + state_array[3] * dt;
-  next_state[1] = state_array[1] + state_array[4] * dt;
-  next_state[2] = state_array[2] + state_array[5] * dt;
+  next_state[0] = next_state[0] + next_state[3] * dt;
+  next_state[1] = next_state[1] + next_state[4] * dt;
+  next_state[2] = next_state[2] + next_state[5] * dt;
   next_state[3] = GZ * tan( radians(-pitch));
-  next_state[4] = -GZ * tan( radians(roll));
+  // this negation is also because of the coordinate system of reach
+  next_state[4] = -GZ * tan( radians(-roll));
 
   
-  float deepreach_input[7] = {d_bound_i, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], next_state[6]};
+  float deepreach_input[8] = {1.4f, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], next_state[6], d_bound_i};
   networkEvaluate(&deepreach_output, &deepreach_input);
   value = deepreach_output.thrust_0;
   return value;
 }
+
+
+
+
 
 
 static float values[4];
@@ -371,15 +385,18 @@ void appMain() {
   // DEBUG_PRINT("Controller Type: %i\n", controllerType);
 
 
-  desAttitudeLogId = logGetVarId("GUIDED_DEM", "roll");
+  // desAttitudeLogId = logGetVarId("GUIDED_DEM", "roll");
 
   while(1) {
-
 
     vTaskDelay(M2T(100));
 
     // sample a random number between 0 and d_bound
-    d_bound_i = d_bound * (rand() / (float) RAND_MAX);
+    // d_bound_i = d_bound * (rand() / (float) RAND_MAX);
+
+    d_bound_i = d_bound;
+
+    // DEBUG_PRINT("d_bound_i: %f\n", d_bound_i);
 
     roll_bound_i = roll_bound * d_bound_i;
     pitch_bound_i = pitch_bound * d_bound_i;
@@ -392,8 +409,6 @@ void appMain() {
     state_array[3] = getVx();
     state_array[4] = getVy();
     state_array[5] = getVz();
-
-
 
     roll_dist_i_max = roll_bound_i;
     roll_dist_i_min = -roll_bound_i;
@@ -420,7 +435,7 @@ void appMain() {
       }
     }
 
-    if (state_array[2] < 0.3f) {
+    if (state_array[2] < 0.2f) {
       roll_dist = 0.0f;
       pitch_dist = 0.0f;
     }
@@ -440,6 +455,9 @@ void appMain() {
         pitch_dist = pitch_dist_i_min;
       }
     }
+
+    DEBUG_PRINT("Roll Dist: %f\n", roll_dist);
+    DEBUG_PRINT("Pitch Dist: %f\n", pitch_dist);
 
 
 
