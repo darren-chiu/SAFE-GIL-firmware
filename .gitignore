@@ -106,3 +106,8 @@ firmware/build
 *.d
 
 *.png
+
+# C stuff
+*.i
+*.s
+*.S

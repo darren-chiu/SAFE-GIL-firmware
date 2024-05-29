@@ -104,8 +104,10 @@ def generate_c_model(model, output_path, output_folder, testing=False):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    if output_path:
-        with open(output_path, 'w') as f:
+    final_output_path = os.path.join(output_folder, output_path)
+
+    if final_output_path:
+        with open(final_output_path, 'w') as f:
             f.write(source)
         f.close()
 
