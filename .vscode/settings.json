@@ -18,6 +18,7 @@
         "position_controller.h": "c",
         "locale": "c",
         "commander.h": "c",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "estimator_kalman.h": "c"
     }
 }

@@ -21,6 +21,8 @@
 
 #include "commander.h"
 
+#include "timers.h"
+
 
 
 
@@ -42,6 +44,38 @@ static setpoint_t setpoint;
 
 static state_t state;
 
+
+// Observation Variables
+static uint8_t sensor_status;
+static VL53L5CX_Configuration tof_config;
+/**
+ * @brief Defines the minimum distance of each input column of the ToF sensor. 
+ * This is an intermeddiate that is a copy of the sensor matrix.
+ * 
+ */
+static uint16_t tof_input[OBST_DIM*OBST_DIM];
+
+/**
+ * @brief Defines the status of each zone where 5 and 9 means that the range status
+ * is OK.
+ */
+static uint8_t tof_status[OBST_DIM*OBST_DIM];
+
+/**
+ * @brief The input vector seen for the obstacle encoder. 
+ * 
+ */
+static float obstacle_inputs[OBST_DIM];
+
+// Bool that tracks when the obstacle embedder needs to be updated.
+static bool isToFStale = false;
+// Timer that tracks the observation request process. 
+static xTimerHandle ObservationTimer;
+
+// The below function will call based on the xTimerCreate interval. 
+static void pullObs(xTimerHandle timer) {
+	isToFStale = tof_task(&tof_config, &sensor_status, tof_input, tof_status);
+}
 
 
 void convertToSetpoint(setpoint_t *setpoint, float thrust, float roll, float pitch){
@@ -116,6 +150,17 @@ void getNNOutput(struct control_t_n *control_n){
   nn_input[2] = nn_input[2] - 0.4;
   nn_input[3] = nn_input[3] - 0.85;
   nn_input[5] = nn_input[5] - 0.009;
+
+  /**
+   * @TODO: UMUT MODIFY HERE TO FIT YOUR NETWORK. 
+   * "obstacle_inputs" are updated at the correct frequency in a separate process.
+   */
+  if (!isToFStale) {
+    isToFStale = process_obst(obstacle_inputs, (uint16_t* )tof_input, (uint8_t* ) tof_status);
+  }
+  for (int i=0;i<OBST_DIM;i++) {
+    nn_input[6+i] = obstacle_inputs[i];
+  }
 
   networkEvaluate(&control_n, &nn_input);
 
@@ -210,6 +255,15 @@ bool hover_yet = false;
 
 // We still need an appMain() function, but we will not really use it. Just let it quietly sleep.
 void appMain() {
+
+  #ifdef TOF_ENABLE
+    	//Initialize sensor platform
+		tof_init(&tof_config);
+		vTaskDelay(M2T(10));
+    //Start RTOS task for observations. The task will thus run at M2T(67) ~ 15Hz.
+    ObservationTimer = xTimerCreate("ObservationTimer", M2T(67), pdTRUE, NULL, pullObs);
+    xTimerStart(ObservationTimer, 20);
+	#endif
 
   initLogIds();
 

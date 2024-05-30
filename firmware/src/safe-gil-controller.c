@@ -16,7 +16,6 @@
 
 
 // #define GUIDED_DATA_COLLECTION
-#define TOF_ENABLE
 
 #include "debug.h"
 #include "log.h"
@@ -25,12 +24,8 @@
 #include "controller_pid.h"
 #include "obst_daq.h"
 
+#include "timers.h"
 #include "controller_pid.h"
-
-
-
-
-
 
 
 static float capAngle(float angle) {
@@ -58,14 +53,9 @@ static int count = 0;
 // // do the same thing for thrust std
 // static float thrust_std[4] = {3781.97827489, 4069.80051149, 3844.66114359, 4089.51596848};
 
-static control_t_n control_nn;
-
-// Observations
+// Observation Variables
 static uint8_t sensor_status;
 static VL53L5CX_Configuration tof_config;
-
-// Bool that tracks when the obstacle embedder needs to be updated.
-static bool isToFStale = false;
 /**
  * @brief Defines the minimum distance of each input column of the ToF sensor. 
  * This is an intermeddiate that is a copy of the sensor matrix.
@@ -80,10 +70,20 @@ static uint16_t tof_input[OBST_DIM*OBST_DIM];
 static uint8_t tof_status[OBST_DIM*OBST_DIM];
 
 /**
- * @brief The vector of horizontal values.
+ * @brief The input vector seen for the obstacle encoder. 
  * 
  */
 static float obstacle_inputs[OBST_DIM];
+
+// Bool that tracks when the obstacle embedder needs to be updated.
+static bool isToFStale = false;
+// Timer that tracks the observation request process. 
+static xTimerHandle ObservationTimer;
+
+// The below function will call based on the xTimerCreate interval. 
+static void pullObs(xTimerHandle timer) {
+	isToFStale = tof_task(&tof_config, &sensor_status, tof_input, tof_status);
+}
 
 void controllerOutOfTreeInit() {
 
@@ -370,6 +370,16 @@ float getValue(const float *state_array, float d_bound_i, float roll, float pitc
 static float values[4];
 
 void appMain() {
+  initLogIds();
+
+   #ifdef TOF_ENABLE
+    //Initialize sensor platform
+		tof_init(&tof_config);
+		vTaskDelay(M2T(10));
+    //Start RTOS task for observations. The task will thus run at M2T(67) ~ 15Hz.
+    ObservationTimer = xTimerCreate("ObservationTimer", M2T(67), pdTRUE, NULL, pullObs);
+    xTimerStart(ObservationTimer, 20);
+	#endif
   
   vTaskDelay(M2T(10));
   
@@ -456,8 +466,13 @@ void appMain() {
       }
     }
 
-    DEBUG_PRINT("Roll Dist: %f\n", roll_dist);
-    DEBUG_PRINT("Pitch Dist: %f\n", pitch_dist);
+    // DEBUG_PRINT("Roll Dist: %f\n", roll_dist);
+    // DEBUG_PRINT("Pitch Dist: %f\n", pitch_dist);
+    if (!isToFStale) {
+      isToFStale = process_obst(obstacle_inputs, (uint16_t* )tof_input, (uint8_t* ) tof_status);
+    }
+    count++;
+    DEBUG_PRINT("ToF: (%f,%f,%f,%f, %f, %f, %f, %f)\n", obstacle_inputs[0], obstacle_inputs[1], obstacle_inputs[2], obstacle_inputs[3], obstacle_inputs[4], obstacle_inputs[5], obstacle_inputs[6], obstacle_inputs[7]);
 
 
 
@@ -487,19 +502,17 @@ void appMain() {
 LOG_GROUP_START(guide_d)
 LOG_ADD(LOG_FLOAT, roll_d, &roll_dist)
 LOG_ADD(LOG_FLOAT, pitch_d, &pitch_dist)
+
+LOG_ADD(LOG_FLOAT, obs1, &obstacle_inputs[0])
+LOG_ADD(LOG_FLOAT, obs2, &obstacle_inputs[1])
+LOG_ADD(LOG_FLOAT, obs3, &obstacle_inputs[2])
+LOG_ADD(LOG_FLOAT, obs4, &obstacle_inputs[3])
+LOG_ADD(LOG_FLOAT, obs5, &obstacle_inputs[4])
+LOG_ADD(LOG_FLOAT, obs6, &obstacle_inputs[5])
+LOG_ADD(LOG_FLOAT, obs7, &obstacle_inputs[6])
+LOG_ADD(LOG_FLOAT, obs8, &obstacle_inputs[7])
+
 LOG_GROUP_STOP(guide_d)
 
-
-// ADD OBSEVATIONS LATER TODO
-// LOG_GROUP_START(gil)
-// LOG_ADD(LOG_FLOAT, obs1, &obstacle_inputs[0])
-// LOG_ADD(LOG_FLOAT, obs2, &obstacle_inputs[1])
-// LOG_ADD(LOG_FLOAT, obs3, &obstacle_inputs[2])
-// LOG_ADD(LOG_FLOAT, obs4, &obstacle_inputs[3])
-// LOG_ADD(LOG_FLOAT, obs5, &obstacle_inputs[4])
-// LOG_ADD(LOG_FLOAT, obs6, &obstacle_inputs[5])
-// LOG_ADD(LOG_FLOAT, obs7, &obstacle_inputs[6])
-// LOG_ADD(LOG_FLOAT, obs8, &obstacle_inputs[7])
-// LOG_GROUP_STOP(gil)
 
 
