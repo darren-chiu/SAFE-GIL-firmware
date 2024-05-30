@@ -1,47 +1,19 @@
 #include "obst_daq.h"
 #include "i2cdev.h"
 
-static float SAFE_HEIGHT = 0.5f;
-
+static float SAFE_HEIGHT = 0.25f;
 
 uint8_t tof_init(VL53L5CX_Configuration *tof_config) {
     // bool I2C_expander_status;
     uint8_t sensor_status;
-    // // Set all the pins to be outputs. Setting all pins to 0, makes them all outputs.
-    // I2C_expander_status = i2cdevWriteByte(I2C1_DEV, EXPANDER_ADDR, 0x03, 0x00);
-    // if (I2C_expander_status == false) {
-    //     DEBUG_PRINT("I2C Output Configuration: Fail\n"); 
-    // }
-    // // Disable all the sensors by setting the output of all pins to be 0.
-    // I2C_expander_status = i2cdevWriteByte(I2C1_DEV, EXPANDER_ADDR, 0x01, 0x00);
-    // if (I2C_expander_status == true) {
-    //     DEBUG_PRINT("Disabled all ToF sensors.\n"); 
-    // }
-
-    // i2cdevWriteByte(I2C1_DEV, EXPANDER_ADDR, 0x02, 0x00);
-    // if (I2C_expander_status == true) {
-    //     DEBUG_PRINT("Assigned Inversioln\n"); 
-    // }
-    // for (int i =0; i < NUM_SENSORS; i++) {
     bool status = false;
-
-    // Enable the i'th ToF sensor.
-    // status = I2C_expander_set_pin(pin_order[i], 1);
-
-    // if (status == true) {
-    //     DEBUG_PRINT("Enable VL53L5CX\n", i); 
-    // }
-    // vTaskDelay(M2T(100));
 
     tof_config->platform = VL53L5CX_DEFAULT_I2C_ADDRESS;
     sensor_status = vl53l5cx_init(tof_config);
     if (sensor_status != 0) {
         DEBUG_PRINT("Failed to Initializae VL53L5CX\n");
     }
-    // vTaskDelay(M2T(100));
-    // sensor_status = vl53l5cx_set_i2c_address(tof_config, tof_addresses[i]);
-    // DEBUG_PRINT("Set VL53L5CX [%i] Address\n", i);
-    // The following depends on which configuration is used.
+
     #ifdef ENABLE_4X4_CONTROLLER
         // Sets the sensor to be 4x4.
         sensor_status = vl53l5cx_set_resolution(tof_config, VL53L5CX_RESOLUTION_4X4);
@@ -65,6 +37,7 @@ uint8_t tof_init(VL53L5CX_Configuration *tof_config) {
             DEBUG_PRINT("VL53L5CX Frequency Config: Pass\n"); 
         } 
     #endif
+
     //Below function should be the last called in the init. 
     sensor_status = vl53l5cx_start_ranging(tof_config);
     if (sensor_status != 0) {
@@ -74,7 +47,7 @@ uint8_t tof_init(VL53L5CX_Configuration *tof_config) {
     return sensor_status;
 }
 
-bool process_obst(const state_t *state, float *obstacle_inputs, uint16_t *tof_input, uint8_t *tof_status) {
+bool process_obst(float *obstacle_inputs, uint16_t *tof_input, uint8_t *tof_status) {
    	/**
    	 * NOTE: Use only the values of a specific column
      * The ToF lens flips the image plane vertically and horizontally
@@ -133,9 +106,6 @@ bool process_obst(const state_t *state, float *obstacle_inputs, uint16_t *tof_in
             }
         }
 
-		// for (int i=0;i<OBST_DIM;i++) {
-		// 	obstacle_inputs[i] = OBST_MAX;
-		// } 
 	#endif
 
     return true;
