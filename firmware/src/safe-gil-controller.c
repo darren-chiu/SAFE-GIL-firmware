@@ -372,7 +372,7 @@ static float values[4];
 void appMain() {
   
   vTaskDelay(M2T(10));
-  
+
   initLogIds();
   
 
