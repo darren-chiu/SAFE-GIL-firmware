@@ -356,7 +356,7 @@ float getValue(const float *state_array, float d_bound_i, float roll, float pitc
   next_state[4] = -GZ * tan( radians(-roll));
 
   
-  float deepreach_input[8] = {1.4f, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], next_state[6], d_bound_i};
+  float deepreach_input[8] = {1.4f, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], d_bound_i};
   networkEvaluate(&deepreach_output, &deepreach_input);
   value = deepreach_output.thrust_0;
   return value;
@@ -373,6 +373,8 @@ void appMain() {
   
   vTaskDelay(M2T(10));
   
+  initLogIds();
+  
 
   // set the stabilizer.controller to 5
   // controllerTypeId = paramGetVarId("stabilizer", "controller");
@@ -387,14 +389,16 @@ void appMain() {
 
   // desAttitudeLogId = logGetVarId("GUIDED_DEM", "roll");
 
+  float state_array[6];
+
   while(1) {
 
     vTaskDelay(M2T(100));
 
     // sample a random number between 0 and d_bound
-    // d_bound_i = d_bound * (rand() / (float) RAND_MAX);
+    d_bound_i = d_bound * (rand() / (float) RAND_MAX);
 
-    d_bound_i = d_bound;
+    // d_bound_i = d_bound;
 
     // DEBUG_PRINT("d_bound_i: %f\n", d_bound_i);
 
@@ -402,13 +406,16 @@ void appMain() {
     pitch_bound_i = pitch_bound * d_bound_i;
 
     // get the state
-    float state_array[6];
+    
     state_array[0] = getX();
     state_array[1] = getY();
     state_array[2] = getZ();
     state_array[3] = getVx();
     state_array[4] = getVy();
     state_array[5] = getVz();
+
+    // print the state
+    DEBUG_PRINT("State: (%f,%f,%f,%f,%f,%f)\n", state_array[0], state_array[1], state_array[2], state_array[3], state_array[4], state_array[5]);
 
     roll_dist_i_max = roll_bound_i;
     roll_dist_i_min = -roll_bound_i;
@@ -425,15 +432,20 @@ void appMain() {
     // min pitch min roll
     values[3] = getValue(state_array, d_bound_i, roll_dist_i_min, pitch_dist_i_min);
 
+    // print values
+    DEBUG_PRINT("Values: %f, %f, %f, %f\n", values[0], values[1], values[2], values[3]);
+
     // get the index of the minimum value
     int min_index = 0;
     float min_value = values[0];
-    for (int i = 1; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
       if (values[i] < min_value) {
         min_value = values[i];
         min_index = i;
       }
     }
+    // print min_index
+    DEBUG_PRINT("Min Index: %i\n", min_index);
 
     if (state_array[2] < 0.2f) {
       roll_dist = 0.0f;
@@ -450,10 +462,12 @@ void appMain() {
       } else if (min_index == 2) {
         roll_dist = roll_dist_i_max;
         pitch_dist = pitch_dist_i_min;
-      } else {
+      } else if (min_index == 3) {
         roll_dist = roll_dist_i_min;
         pitch_dist = pitch_dist_i_min;
+        // DEBUG_PRINT("roll_dist_i_min: %f\n", roll_dist_i_min);
       }
+      else{DEBUG_PRINT("ERROR\n");}
     }
 
     DEBUG_PRINT("Roll Dist: %f\n", roll_dist);
