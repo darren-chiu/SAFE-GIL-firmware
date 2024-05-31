@@ -111,3 +111,13 @@ firmware/build
 *.i
 *.s
 *.S
+*.o.cmd
+*.ko.cmd
+*.mod.c
+*.mod.o
+*.mod.o.cmd
+*.mod
+*.symvers
+*.order
+*.tmp_versions
+*.ko
