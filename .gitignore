@@ -121,3 +121,6 @@ firmware/build
 *.order
 *.tmp_versions
 *.ko
+firmware/build/vendor/built-in.o
+firmware/build/vendor/CMSIS/CMSIS/DSP/Source/FilteringFunctions/arm_biquad_cascade_df1_32x64_q31.o
+firmware/build/vendor/CMSIS/CMSIS/DSP/Source/FilteringFunctions/.arm_lms_q31.o.cmd
