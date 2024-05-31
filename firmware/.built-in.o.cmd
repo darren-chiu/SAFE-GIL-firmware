@@ -1,1 +1,0 @@
-cmd_/Users/umut/projects/lab/crazyfile/SAFE-GIL-firmware/firmware/built-in.o :=  arm-none-eabi-gcc --specs=nosys.specs --specs=nano.specs -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16   -r -o /Users/umut/projects/lab/crazyfile/SAFE-GIL-firmware/firmware/built-in.o /Users/umut/projects/lab/crazyfile/SAFE-GIL-firmware/firmware/src/built-in.o

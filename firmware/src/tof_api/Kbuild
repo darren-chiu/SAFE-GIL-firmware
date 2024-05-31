@@ -1,2 +1,0 @@
-obj-y += vl53l5cx_api.o
-obj-y += ToFplatform.o
