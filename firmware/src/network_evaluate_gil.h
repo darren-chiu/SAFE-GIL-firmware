@@ -27,15 +27,15 @@
 #define NEIGHBORS 2
 #define NBR_OBS_DIM 3
 
-// Obstacle Avoidance Parameters
-#define OBST_MAX 2.0f
-#define SAFE_HEIGHT 0.5f
+// // Obstacle Avoidance Parameters
+// #define OBST_MAX 2.0f
+// #define SAFE_HEIGHT 0.5f
 
-#ifdef ENABLE_4X4_CONTROLLER
-	#define OBST_DIM 16	
-#else
-	#define OBST_DIM 32
-#endif
+// #ifdef ENABLE_4X4_CONTROLLER
+// 	#define OBST_DIM 16	
+// #else
+// 	#define OBST_DIM 32
+// #endif
 
 #define REL_VEL false
 #define REL_OMEGA false

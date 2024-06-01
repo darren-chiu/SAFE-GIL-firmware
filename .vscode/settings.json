@@ -19,6 +19,7 @@
         "locale": "c",
         "commander.h": "c",
         "cstdlib": "c",
-        "estimator_kalman.h": "c"
+        "estimator_kalman.h": "c",
+        "freertos.h": "c"
     }
 }
