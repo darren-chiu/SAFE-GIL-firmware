@@ -24,14 +24,17 @@
 
 #include "timers.h"
 
-
-
-
 uint8_t start = 0;
 
 
 #define DELAY_TO_LAUNCH 500  //ms 
 #define DELAY_AFTER_LAUNCH 300  //ms 
+
+
+
+#define SAFEGIL_IM_TEST // if you want to test safegil im
+
+
 
 
 
@@ -333,7 +336,7 @@ void appMain() {
 
           // modify the inputs
           // nn_input[2] = nn_input[2] - 0.4f;
-          nn_input[2] = nn_input[2] - 0.8f; // vx
+          nn_input[2] = nn_input[2] - 0.9f; // vx
 
           /**
            * @TODO: UMUT MODIFY HERE TO FIT YOUR NETWORK. 
@@ -345,7 +348,7 @@ void appMain() {
 
           // putting the rounded observation inputs to the nn_input array
           for (int i=0;i<8;i++) {
-            nn_input[4+i] = (roundf(obstacle_inputs[i] * 100) / 100) - 2.0f; // for centered obs
+            nn_input[4+i] = ((roundf(obstacle_inputs[i] * 100) / 100) - 2.0f) / 16.0f; // for centered obs
           }
           DEBUG_PRINT("Obstacle Inputs: %f, %f, %f, %f, %f, %f, %f, %f\n", nn_input[4], nn_input[5], nn_input[6], nn_input[7], nn_input[8], nn_input[9], nn_input[10], nn_input[11]);
 
@@ -353,8 +356,18 @@ void appMain() {
           // self.expert_actions_mean = torch.tensor([ 4.8858308e+04, -5.7000000e-02, -1.7360000e+00 ])
           // self.expert_actions_std = torch.tensor([1.293753e+03, 4.344000e+00, 3.436000e+00 ])
           // action_unnormalized = action * self.expert_actions_std + self.expert_actions_mean 
-          // control_n.thrust_0 = control_n.thrust_0 * 1293.753 + 48858.308;
-          // control_n.thrust_1 = control_n.thrust_1 * 4.344 -0.057;
+
+          
+          #ifdef SAFEGIL_IM_TEST
+            // SAFEGIL IM TEST
+            control_n.thrust_0 = control_n.thrust_0 * 8.439f + (-0.415);
+            control_n.thrust_1 = control_n.thrust_1 * 7.226f + (2.717f);
+          #else
+            // BC IM TEST
+            control_n.thrust_0 = control_n.thrust_0 * 6.462f + (-0.197f);
+            control_n.thrust_1 = control_n.thrust_1 * 5.174f + (-1.296f);
+          #endif
+
           control_n.thrust_0 = clip(control_n.thrust_0, roll_lower, roll_upper);
           control_n.thrust_1 = clip(control_n.thrust_1, pitch_lower, pitch_upper);
 
