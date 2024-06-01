@@ -91,9 +91,9 @@ def get_latest_checkpoint(path_to_search, str_to_search='_b'):
 # get these in iteration
 config = {}
 config['model_architecture'] = 'mlp'
-config['input_dim'] = 6 # # 23 with the sensor readings, wout 15
-config['output_dim'] = 3
-config['hidden_layer_list'] = [16,16,16]
+config['input_dim'] = 12 
+config['output_dim'] = 2
+config['hidden_layer_list'] = [256,256]
 config['activation'] = 'tanh'
 config['drop_prob'] = 0.0
 config['use_batch_norm'] = False
@@ -103,7 +103,7 @@ config['optimizer_name'] = 'adam'
 config['lr'] = 0.001
 config['l2_reg'] = 0.0001
 config['device'] = 'cpu'
-config['path_to_restore'] = 'conversion/[16,16,16]_tanh_attitude' # 'conversion/[16,16,16]_tanh'
+config['path_to_restore'] = 'conversion/im_4d_w_obs_attitude_10trajs/[256,256]_tanh' # 'conversion/[16,16,16]_tanh'
 
 model = MLP(config['input_dim'], config['output_dim'], config['hidden_layer_list'], config['activation'], config['drop_prob'], config['use_batch_norm'], config['model_verbose'])
 
@@ -125,4 +125,4 @@ for name, param in model.named_parameters():
 
 
 #Feed model into script
-generate_c_model(model, "test_model.c", "c_models/", testing=False)
+generate_c_model(model, "im_4d_w_obs_attitude_10trajs_[256,256]_tanh.c", "c_models/", testing=False)

@@ -326,10 +326,6 @@ void appMain() {
         else{
 
 
-
-
-
-
           // modify the inputs
           // nn_input[2] = nn_input[2] - 0.4f;
           nn_input[2] = nn_input[2] - 0.8f; // vx
@@ -344,7 +340,7 @@ void appMain() {
 
           // putting the rounded observation inputs to the nn_input array
           for (int i=0;i<8;i++) {
-            nn_input[4+i] = roundf(obstacle_inputs[i] * 100) / 100;
+            nn_input[4+i] = (roundf(obstacle_inputs[i] * 100) / 100) - 2.0f; // for centered obs
           }
           DEBUG_PRINT("Obstacle Inputs: %f, %f, %f, %f, %f, %f, %f, %f\n", nn_input[4], nn_input[5], nn_input[6], nn_input[7], nn_input[8], nn_input[9], nn_input[10], nn_input[11]);
 
@@ -361,7 +357,6 @@ void appMain() {
           DEBUG_PRINT(" roll: %f, pitch: %f \n", control_n.thrust_0, control_n.thrust_1);
 
           
-
           // convert to setpoint
           convertToSetpoint( &setpoint, control_n.thrust_0, control_n.thrust_1);
 
