@@ -509,7 +509,7 @@ void appMain() {
       roll_dist = 0.0f;
       pitch_dist = 0.0f;
     }
-    else {
+    elseif (state_array[0] > 0.25f){
       // set roll_d and pitch_d according to the min_index
       if (min_index == 0) {
         roll_dist = roll_dist_i_max;

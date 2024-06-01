@@ -274,7 +274,7 @@ void appMain() {
         // Hover to 41 cm and wait for the drone to stabilize
         TakeOff(height);
 
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 20; i++) {
           headToSetpoint(0.0f, 0.0f, height, 0.0f);
           vTaskDelay(30);
         }
@@ -284,6 +284,11 @@ void appMain() {
         // set recording parameter to 1
         paramSetInt(recordingId, 1);
         DEBUG_PRINT("Recording\n");
+
+        for (int i = 0; i < 50; i++) {
+          headToSetpoint( (float)i / 1000.0f , 0.0f, height, 0.0f); // @TODO: check if this is correct
+          vTaskDelay(30);
+        }
       }
       else{
         counter++;
