@@ -15,7 +15,6 @@
 #define DEBUG_MODULE "safe-gil"
 
 
-// #define GUIDED_DATA_COLLECTION
 
 #include "debug.h"
 #include "log.h"
@@ -367,11 +366,10 @@ float getValue(const float *state_array, float d_bound_i, float roll, float pitc
   next_state[4] = -next_state[4];
 
   
-  // float deepreach_input[8] = {1.4f, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], d_bound_i};
+  float deepreach_input[8] = {1.4f, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], d_bound_i};
   
-  // float deepreach_input[8] = {1.4f, 0.8479f, 0.4321, -0.3382, 0.3434, -0.3701, -0.2927, 0.45f};
   // state=torch.tensor([0,0,0.5,1.5,0,0])
-  float deepreach_input[8] = {1.4f, 0.0f, 0.0f, 0.5f, 1.5f, 0.0f, 0.0f, 0.45f};
+  // float deepreach_input[8] = {1.4f, 0.0f, 0.0f, 0.5f, 1.5f, 0.0f, 0.0f, 0.45f};
 
   // convert the deepreach_input
   // input[..., 1:] = (coord[..., 1:] - self.state_mean) / self.state_var
@@ -495,7 +493,7 @@ void appMain() {
     values[3] = getValue(state_array, d_bound_i, roll_dist_i_min, pitch_dist_i_min);
 
     // print values
-    DEBUG_PRINT("Values: %f, %f, %f, %f\n", values[0], values[1], values[2], values[3]);
+    // DEBUG_PRINT("Values: %f, %f, %f, %f\n", values[0], values[1], values[2], values[3]);
 
     // get the index of the minimum value
     int min_index = 0;
@@ -514,7 +512,7 @@ void appMain() {
       pitch_dist = 0.0f;
     }
     else{
-      if (state_array[0] > 0.25f){
+      if (state_array[0] > 0.1f){
         // set roll_d and pitch_d according to the min_index
         if (min_index == 0) {
           roll_dist = roll_dist_i_max;
