@@ -513,23 +513,25 @@ void appMain() {
       roll_dist = 0.0f;
       pitch_dist = 0.0f;
     }
-    elseif (state_array[0] > 0.25f){
-      // set roll_d and pitch_d according to the min_index
-      if (min_index == 0) {
-        roll_dist = roll_dist_i_max;
-        pitch_dist = pitch_dist_i_max;
-      } else if (min_index == 1) {
-        roll_dist = roll_dist_i_min;
-        pitch_dist = pitch_dist_i_max;
-      } else if (min_index == 2) {
-        roll_dist = roll_dist_i_max;
-        pitch_dist = pitch_dist_i_min;
-      } else if (min_index == 3) {
-        roll_dist = roll_dist_i_min;
-        pitch_dist = pitch_dist_i_min;
-        // DEBUG_PRINT("roll_dist_i_min: %f\n", roll_dist_i_min);
+    else{
+      if (state_array[0] > 0.25f){
+        // set roll_d and pitch_d according to the min_index
+        if (min_index == 0) {
+          roll_dist = roll_dist_i_max;
+          pitch_dist = pitch_dist_i_max;
+        } else if (min_index == 1) {
+          roll_dist = roll_dist_i_min;
+          pitch_dist = pitch_dist_i_max;
+        } else if (min_index == 2) {
+          roll_dist = roll_dist_i_max;
+          pitch_dist = pitch_dist_i_min;
+        } else if (min_index == 3) {
+          roll_dist = roll_dist_i_min;
+          pitch_dist = pitch_dist_i_min;
+          // DEBUG_PRINT("roll_dist_i_min: %f\n", roll_dist_i_min);
+        }
+        else{DEBUG_PRINT("ERROR\n");}
       }
-      else{DEBUG_PRINT("ERROR\n");}
     }
 
     // DEBUG_PRINT("Roll Dist: %f\n", roll_dist);
