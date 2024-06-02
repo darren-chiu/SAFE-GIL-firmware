@@ -327,7 +327,7 @@ static float GZ = 9.81f;
 // self.state_mean tensor([ 2.0000, -0.2500,  0.5000,  0.0000,  0.0000,  0.0000,  0.2500])
 // self.state_var tensor([2.0000, 1.0000, 0.5000, 1.5000, 1.5000, 0.3000, 0.2500])
 static float state_mean[7] = {2.0000f, -0.2500f, 0.5000f, 0.0000f, 0.0000f, 0.0000f, 0.2500f};
-static float state_var[7] = {2.0000f, 1.0000f, 0.5000f, 1.5000f, 1.5000f, 0.3000f, 0.2500f};
+static float state_var[7] = {2.0000f, 0.75f, 0.5000f, 1.5000f, 1.5000f, 0.3000f, 0.2500f};
 
 // hard obstacle setting it is the same!
 
@@ -367,10 +367,11 @@ float getValue(const float *state_array, float d_bound_i, float roll, float pitc
   next_state[4] = -next_state[4];
 
   
-  float deepreach_input[8] = {1.4f, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], d_bound_i};
+  // float deepreach_input[8] = {1.4f, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], d_bound_i};
+  
   // float deepreach_input[8] = {1.4f, 0.8479f, 0.4321, -0.3382, 0.3434, -0.3701, -0.2927, 0.45f};
   // state=torch.tensor([0,0,0.5,1.5,0,0])
-  // float deepreach_input[8] = {1.4f, 0.0f, 0.0f, 0.5f, 1.5f, 0.0f, 0.0f, 0.45f};
+  float deepreach_input[8] = {1.4f, 0.0f, 0.0f, 0.5f, 1.5f, 0.0f, 0.0f, 0.45f};
 
   // convert the deepreach_input
   // input[..., 1:] = (coord[..., 1:] - self.state_mean) / self.state_var
@@ -494,7 +495,7 @@ void appMain() {
     values[3] = getValue(state_array, d_bound_i, roll_dist_i_min, pitch_dist_i_min);
 
     // print values
-    // DEBUG_PRINT("Values: %f, %f, %f, %f\n", values[0], values[1], values[2], values[3]);
+    DEBUG_PRINT("Values: %f, %f, %f, %f\n", values[0], values[1], values[2], values[3]);
 
     // get the index of the minimum value
     int min_index = 0;
