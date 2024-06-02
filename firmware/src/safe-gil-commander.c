@@ -32,7 +32,7 @@ uint8_t start = 0;
 
 
 
-#define SAFEGIL_IM_TEST // if you want to test safegil im
+// #define SAFEGIL_IM_TEST // if you want to test safegil im
 
 
 
@@ -277,7 +277,7 @@ void appMain() {
         // Hover to 41 cm and wait for the drone to stabilize
         TakeOff(height);
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 50; i++) {
           headToSetpoint(0.0f, 0.0f, height, 0.0f);
           vTaskDelay(30);
         }
@@ -288,10 +288,10 @@ void appMain() {
         paramSetInt(recordingId, 1);
         DEBUG_PRINT("Recording\n");
 
-        for (int i = 0; i < 50; i++) {
-          headToSetpoint( (float)i / 1000.0f , 0.0f, height, 0.0f); // @TODO: check if this is correct
-          vTaskDelay(30);
-        }
+        // for (int i = 0; i < 50; i++) {
+        //   headToSetpoint( (float)i / 1000.0f , 0.0f, height, 0.0f); // @TODO: check if this is correct
+        //   vTaskDelay(20);
+        // }
       }
       else{
         counter++;
@@ -360,8 +360,8 @@ void appMain() {
           
           #ifdef SAFEGIL_IM_TEST
             // SAFEGIL IM TEST
-            control_n.thrust_0 = control_n.thrust_0 * 8.439f + (-0.415);
-            control_n.thrust_1 = control_n.thrust_1 * 7.226f + (2.717f);
+            control_n.thrust_0 = control_n.thrust_0 * 8.439f + (-0.415); // + 0.3f;
+            control_n.thrust_1 = control_n.thrust_1 * 7.226f + (2.717f); // + 3.0f;
           #else
             // BC IM TEST
             control_n.thrust_0 = control_n.thrust_0 * 6.462f + (-0.197f);
