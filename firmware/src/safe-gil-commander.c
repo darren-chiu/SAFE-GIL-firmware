@@ -32,7 +32,7 @@ uint8_t start = 0;
 
 
 
-// #define SAFEGIL_IM_TEST // if you want to test safegil im
+#define SAFEGIL_IM_TEST // if you want to test safegil im
 
 
 
@@ -360,8 +360,8 @@ void appMain() {
           
           #ifdef SAFEGIL_IM_TEST
             // SAFEGIL IM TEST
-            control_n.thrust_0 = control_n.thrust_0 * 8.439f + (-0.415); // + 0.3f;
-            control_n.thrust_1 = control_n.thrust_1 * 7.226f + (2.717f); // + 3.0f;
+            control_n.thrust_0 = control_n.thrust_0 * (8.439f - 3.0f ) + (-0.415 -0.5f);
+            control_n.thrust_1 = control_n.thrust_1 * 7.226f + (2.717f - 3.0f);
           #else
             // BC IM TEST
             control_n.thrust_0 = control_n.thrust_0 * 6.462f + (-0.197f);
