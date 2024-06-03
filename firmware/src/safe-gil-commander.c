@@ -335,8 +335,6 @@ void appMain() {
 
 
           // modify the inputs
-          // nn_input[2] = nn_input[2] - 0.4f;
-          nn_input[2] = nn_input[2] - 0.9f; // vx
 
           /**
            * @TODO: UMUT MODIFY HERE TO FIT YOUR NETWORK. 
@@ -360,8 +358,8 @@ void appMain() {
           
           #ifdef SAFEGIL_IM_TEST
             // SAFEGIL IM TEST
-            control_n.thrust_0 = control_n.thrust_0 * (8.439f - 3.0f ) + (-0.415 -0.5f);
-            control_n.thrust_1 = control_n.thrust_1 * 7.226f + (2.717f - 3.0f);
+            control_n.thrust_0 = control_n.thrust_0 * 7.216f;
+            control_n.thrust_1 = control_n.thrust_1 * 4.801f;
           #else
             // BC IM TEST
             control_n.thrust_0 = control_n.thrust_0 * 6.462f + (-0.197f);
