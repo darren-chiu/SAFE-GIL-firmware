@@ -32,7 +32,7 @@ uint8_t start = 0;
 
 
 
-// #define SAFEGIL_IM_TEST // if you want to test safegil im
+#define SAFEGIL_IM_TEST // if you want to test safegil im
 
 
 
