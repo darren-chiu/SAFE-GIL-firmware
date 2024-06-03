@@ -287,7 +287,7 @@ void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const s
 }
 
 
-float d_bound = 0.24f;
+float d_bound = 0.23f;
 float d_bound_i;
 static float roll_bound = 25.0f;
 static float pitch_bound = 25.0f;
