@@ -287,7 +287,7 @@ void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const s
 }
 
 
-float d_bound = 0.3f;
+float d_bound = 0.24f;
 float d_bound_i;
 static float roll_bound = 25.0f;
 static float pitch_bound = 25.0f;
@@ -435,7 +435,7 @@ void appMain() {
     // sample a random number between 0 and d_bound
     d_bound_i = d_bound * (rand() / (float) RAND_MAX);
 
-    if (d_bound_i < 0.2f) {
+    if (d_bound_i < 0.13f) {
       d_bound_i = 0.0f;
     }
 
@@ -456,7 +456,7 @@ void appMain() {
     state_array[5] = getVz();
 
     if (!howering){
-      if (state_array[2] > 0.4f && state_array[0] < 0.3f && state_array[0] > -0.3f ) {
+      if (state_array[2] > 0.39f && state_array[0] < 0.3f && state_array[0] > -0.3f ) {
         howering = true;
         // set recording parameter to 1
         paramSetInt(recordingId, 1);
