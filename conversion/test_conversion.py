@@ -103,7 +103,7 @@ config['optimizer_name'] = 'adam'
 config['lr'] = 0.001
 config['l2_reg'] = 0.0001
 config['device'] = 'cpu'
-config['path_to_restore'] = 'conversion/im_4d_w_obs_attitude_smallobs_3000_epoch_5trajs_w_safegil/[256,256]_tanh' # 'conversion/[16,16,16]_tanh'
+config['path_to_restore'] = 'conversion/im_4d_w_obs_attitude_smallobs_3000_epoch_5trajs/[256,256]_tanh' # 'conversion/[16,16,16]_tanh'
 
 model = MLP(config['input_dim'], config['output_dim'], config['hidden_layer_list'], config['activation'], config['drop_prob'], config['use_batch_norm'], config['model_verbose'])
 
@@ -125,4 +125,4 @@ for name, param in model.named_parameters():
 
 
 #Feed model into script
-generate_c_model(model, "im_4d_w_obs_attitude_smallobs_3000_epoch_5trajs_w_safegil_[256,256]_tanh.c", "c_models/", testing=False)
+generate_c_model(model, "im_4d_w_obs_attitude_smallobs_3000_epoch_5trajs_[256,256]_tanh.c", "c_models/", testing=False)
