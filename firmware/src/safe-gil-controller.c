@@ -287,7 +287,7 @@ void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const s
 }
 
 
-float d_bound = 0.45f;
+float d_bound = 0.3f;
 float d_bound_i;
 static float roll_bound = 25.0f;
 static float pitch_bound = 25.0f;
@@ -434,9 +434,10 @@ void appMain() {
 
     // sample a random number between 0 and d_bound
     d_bound_i = d_bound * (rand() / (float) RAND_MAX);
-    // if (d_bound_i < 0.1f) {
-    //   d_bound_i = 0.0f;
-    // }
+
+    if (d_bound_i < 0.2f) {
+      d_bound_i = 0.0f;
+    }
 
     // d_bound_i = d_bound;
 
@@ -464,7 +465,7 @@ void appMain() {
     }
 
     if (howering) {
-      if (state_array[2] < 0.28f && state_array[0] > 3.6f) {
+      if (state_array[2] < 0.28f && state_array[0] > 3.95f) {
         howering = false;
         // set recording parameter to 0
         paramSetInt(recordingId, 0);
@@ -512,24 +513,22 @@ void appMain() {
       pitch_dist = 0.0f;
     }
     else{
-      if (state_array[0] > 0.1f){
-        // set roll_d and pitch_d according to the min_index
-        if (min_index == 0) {
-          roll_dist = roll_dist_i_max;
-          pitch_dist = pitch_dist_i_max;
-        } else if (min_index == 1) {
-          roll_dist = roll_dist_i_min;
-          pitch_dist = pitch_dist_i_max;
-        } else if (min_index == 2) {
-          roll_dist = roll_dist_i_max;
-          pitch_dist = pitch_dist_i_min;
-        } else if (min_index == 3) {
-          roll_dist = roll_dist_i_min;
-          pitch_dist = pitch_dist_i_min;
-          // DEBUG_PRINT("roll_dist_i_min: %f\n", roll_dist_i_min);
-        }
-        else{DEBUG_PRINT("ERROR\n");}
+      // set roll_d and pitch_d according to the min_index
+      if (min_index == 0) {
+        roll_dist = roll_dist_i_max;
+        pitch_dist = pitch_dist_i_max;
+      } else if (min_index == 1) {
+        roll_dist = roll_dist_i_min;
+        pitch_dist = pitch_dist_i_max;
+      } else if (min_index == 2) {
+        roll_dist = roll_dist_i_max;
+        pitch_dist = pitch_dist_i_min;
+      } else if (min_index == 3) {
+        roll_dist = roll_dist_i_min;
+        pitch_dist = pitch_dist_i_min;
+        // DEBUG_PRINT("roll_dist_i_min: %f\n", roll_dist_i_min);
       }
+      else{DEBUG_PRINT("ERROR\n");}
     }
 
     // DEBUG_PRINT("Roll Dist: %f\n", roll_dist);
