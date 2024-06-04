@@ -20,6 +20,8 @@
         "commander.h": "c",
         "cstdlib": "c",
         "estimator_kalman.h": "c",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "controller_pid.h": "c",
+        "debug.h": "c"
     }
 }
