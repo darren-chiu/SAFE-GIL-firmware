@@ -435,9 +435,9 @@ void appMain() {
     // sample a random number between 0 and d_bound
     d_bound_i = d_bound * (rand() / (float) RAND_MAX);
 
-    if (d_bound_i < 0.13f) {
-      d_bound_i = 0.0f;
-    }
+    // if (d_bound_i < 0.13f) {
+    //   d_bound_i = 0.0f;
+    // }
 
     // d_bound_i = d_bound;
 
