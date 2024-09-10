@@ -35,7 +35,7 @@ uint8_t start = 0;
 
 
 
-#define SAFEGIL_IM_TEST // if you want to test safegil im
+// #define SAFEGIL_IM_TEST // if you want to test safegil im
 
 
 #define ENABLE_SAFETY_FILTER // if you want to filter the policy
@@ -65,6 +65,7 @@ uint8_t start = 0;
   float current_value;
 
   static float filter_threshold = 0.1f;
+
 #endif
 
 
@@ -118,36 +119,37 @@ void convertToSetpoint(setpoint_t *setpoint, float roll, float pitch){
   // setpoint->thrust = thrust;
 }
 
+#ifdef ENABLE_SAFETY_FILTER
+  float getValue(const float *state_array, float d_bound_i, float roll, float pitch){
+    float value = 0.0f;
+    struct control_t_n deepreach_output;
 
-float getValue(const float *state_array, float d_bound_i, float roll, float pitch){
-  float value = 0.0f;
-  struct control_t_n deepreach_output;
+    float next_state[6] = {state_array[0], state_array[1], state_array[2], state_array[3], state_array[4], state_array[5]};
 
-  float next_state[6] = {state_array[0], state_array[1], state_array[2], state_array[3], state_array[4], state_array[5]};
+    next_state[0] = next_state[0] + next_state[3] * dt;
+    next_state[1] = next_state[1] + next_state[4] * dt;
+    // next_state[2] = next_state[2] + next_state[5] * dt;
+    next_state[3] = next_state[3] + GZ * tan( radians(-pitch));
+    next_state[4] = next_state[4] - GZ * tan( radians(roll));
 
-  next_state[0] = next_state[0] + next_state[3] * dt;
-  next_state[1] = next_state[1] + next_state[4] * dt;
-  // next_state[2] = next_state[2] + next_state[5] * dt;
-  next_state[3] = next_state[3] + GZ * tan( radians(-pitch));
-  next_state[4] = next_state[4] - GZ * tan( radians(roll));
+    // invert y and vy because of the coordinate system of reach
+    next_state[1] = -next_state[1];
+    next_state[4] = -next_state[4];
 
-  // invert y and vy because of the coordinate system of reach
-  next_state[1] = -next_state[1];
-  next_state[4] = -next_state[4];
+    
+    float deepreach_input[8] = {1.4f, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], d_bound_i};
 
-  
-  float deepreach_input[8] = {1.4f, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], d_bound_i};
+    // convert the deepreach_input
+    // input[..., 1:] = (coord[..., 1:] - self.state_mean) / self.state_var
+    for (int i = 1; i < 8; i++) {
+      deepreach_input[i] = (deepreach_input[i] - state_mean[i-1]) / state_var[i-1];
+    }
 
-  // convert the deepreach_input
-  // input[..., 1:] = (coord[..., 1:] - self.state_mean) / self.state_var
-  for (int i = 1; i < 8; i++) {
-    deepreach_input[i] = (deepreach_input[i] - state_mean[i-1]) / state_var[i-1];
+    networkEvaluateValue(&deepreach_output, &deepreach_input);
+    value = deepreach_output.thrust_0;
+    return value;
   }
-
-  networkEvaluateValue(&deepreach_output, &deepreach_input);
-  value = deepreach_output.thrust_0;
-  return value;
-}
+#endif
 
 
 
@@ -291,6 +293,13 @@ void appMain() {
   // you can set start to 1 here if you want automatic start
 
 
+
+  roll_opt_control_max = roll_bound;
+  roll_opt_control_min = -roll_bound;
+  pitch_opt_control_max = pitch_bound;
+  pitch_opt_control_min = -pitch_bound;
+
+
   int counter = 0;
 
   float height = 0.41f;
@@ -367,7 +376,8 @@ void appMain() {
         z = getZ();
 
 
-        DEBUG_PRINT("State: %f, %f, %f, %f\n", nn_input[0], nn_input[1], nn_input[2], nn_input[3]);
+        // DEBUG_PRINT("State: %f, %f, %f, %f\n", nn_input[0], nn_input[1], nn_input[2], nn_input[3]); // This debug print is necessary without safety filter
+        // this debug print is necessary without safety filter
 
 
         if (counter > 390 || nn_input[0]>3.75f || nn_input[1]>1.4f || z>0.7f || nn_input[0]<-0.7f || nn_input[1]<-1.0f || z < 0.2f){
@@ -407,7 +417,8 @@ void appMain() {
           for (int i=0;i<8;i++) {
             nn_input[4+i] = ((roundf(obstacle_inputs[i] * 100) / 100) - 2.0f) / 16.0f; // for centered obs
           }
-          DEBUG_PRINT("Obstacle Inputs: %f, %f, %f, %f, %f, %f, %f, %f\n", nn_input[4], nn_input[5], nn_input[6], nn_input[7], nn_input[8], nn_input[9], nn_input[10], nn_input[11]);
+          // DEBUG_PRINT("Obstacle Inputs: %f, %f, %f, %f, %f, %f, %f, %f\n", nn_input[4], nn_input[5], nn_input[6], nn_input[7], nn_input[8], nn_input[9], nn_input[10], nn_input[11]); // This debug print is necessary without safety filter
+          // this debug print is necessary without safety filter
 
           networkEvaluatePolicy(&control_n, &nn_input);
           // self.expert_actions_mean = torch.tensor([ 4.8858308e+04, -5.7000000e-02, -1.7360000e+00 ])
@@ -447,20 +458,14 @@ void appMain() {
             // get the optimum control
             if (current_value < filter_threshold) {
 
-              roll_opt_control_max = roll_bound;
-              roll_opt_control_min = -roll_bound;
-              pitch_opt_control_max = pitch_bound;
-              pitch_opt_control_min = -pitch_bound;
-
-
               // max pitch max roll
-              values[0] = getValue(state_array, d_bound_i, roll_opt_control_max, pitch_opt_control_max);
+              values[0] =  getValue(state_array, d_bound_i, roll_opt_control_max, pitch_opt_control_max);
               // max pitch min roll
-              values[1] = getValue(state_array, d_bound_i, roll_opt_control_min, pitch_opt_control_max);
+              values[1] = 0.0; // getValue(state_array, d_bound_i, roll_opt_control_min, pitch_opt_control_max);
               // min pitch max roll
-              values[2] = getValue(state_array, d_bound_i, roll_opt_control_max, pitch_opt_control_min);
+              values[2] = 0.0; //getValue(state_array, d_bound_i, roll_opt_control_max, pitch_opt_control_min);
               // min pitch min roll
-              values[3] = getValue(state_array, d_bound_i, roll_opt_control_min, pitch_opt_control_min);
+              values[3] = 0.0; //getValue(state_array, d_bound_i, roll_opt_control_min, pitch_opt_control_min);
 
               int max_index = 0;
               float max_value = -1.0f * INFINITY;
@@ -487,14 +492,15 @@ void appMain() {
               }
 
               // set the setpoint values to the optimum control
-              control_n.thrust_0 = clip(roll_opt_control, roll_lower, roll_upper);
-              control_n.thrust_1 = clip(pitch_opt_control, pitch_lower, pitch_upper);
+              control_n.thrust_0 = roll_opt_control;
+              control_n.thrust_1 = pitch_opt_control;
             }
 
           #endif 
 
           // debug print control_n values
-          DEBUG_PRINT(" roll: %f, pitch: %f \n", control_n.thrust_0, control_n.thrust_1);
+          // DEBUG_PRINT(" roll: %f, pitch: %f \n", control_n.thrust_0, control_n.thrust_1); // This debug print is necessary without safety filter
+          // this debug print is necessary without safety filter
 
           
           // convert to setpoint
@@ -515,14 +521,14 @@ void appMain() {
     else {
       // dont do anything
       vTaskDelay(1000);
-      DEBUG_PRINT("Waiting for start\n");
-      x = getX();
-      y = getY();
-      z = getZ();
-      vx = getVx();
-      vy = getVy();
-      vz = getVz();
-      DEBUG_PRINT("State: %f, %f, %f, %f, %f, %f\n", x, y, z, vx, vy, vz);
+      // DEBUG_PRINT("Waiting for start\n");
+      // x = getX();
+      // y = getY();
+      // z = getZ();
+      // vx = getVx();
+      // vy = getVy();
+      // vz = getVz();
+      // DEBUG_PRINT("State: %f, %f, %f, %f, %f, %f\n", x, y, z, vx, vy, vz);
 
     }
   }
@@ -530,16 +536,16 @@ void appMain() {
 }
 
 
-LOG_GROUP_START(gil)
-LOG_ADD(LOG_FLOAT, obs1, &obstacle_inputs[0])
-LOG_ADD(LOG_FLOAT, obs2, &obstacle_inputs[1])
-LOG_ADD(LOG_FLOAT, obs3, &obstacle_inputs[2])
-LOG_ADD(LOG_FLOAT, obs4, &obstacle_inputs[3])
-LOG_ADD(LOG_FLOAT, obs5, &obstacle_inputs[4])
-LOG_ADD(LOG_FLOAT, obs6, &obstacle_inputs[5])
-LOG_ADD(LOG_FLOAT, obs7, &obstacle_inputs[6])
-LOG_ADD(LOG_FLOAT, obs8, &obstacle_inputs[7])
-LOG_GROUP_STOP(gil)
+// LOG_GROUP_START(gil)
+// LOG_ADD(LOG_FLOAT, obs1, &obstacle_inputs[0])
+// LOG_ADD(LOG_FLOAT, obs2, &obstacle_inputs[1])
+// LOG_ADD(LOG_FLOAT, obs3, &obstacle_inputs[2])
+// LOG_ADD(LOG_FLOAT, obs4, &obstacle_inputs[3])
+// LOG_ADD(LOG_FLOAT, obs5, &obstacle_inputs[4])
+// LOG_ADD(LOG_FLOAT, obs6, &obstacle_inputs[5])
+// LOG_ADD(LOG_FLOAT, obs7, &obstacle_inputs[6])
+// LOG_ADD(LOG_FLOAT, obs8, &obstacle_inputs[7])
+// LOG_GROUP_STOP(gil)
 
 
 
