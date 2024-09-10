@@ -22,6 +22,8 @@
         "estimator_kalman.h": "c",
         "freertos.h": "c",
         "controller_pid.h": "c",
-        "debug.h": "c"
+        "debug.h": "c",
+        "network_evaluate_gil_policy.h": "c",
+        "network_evaluate_gil_value.h": "c"
     }
 }

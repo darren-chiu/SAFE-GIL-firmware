@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include "math3d.h"
 
-#include "network_evaluate_gil.h"
+#include "network_evaluate_gil_value.h"
 
 #include "app.h"
 
@@ -380,7 +380,7 @@ float getValue(const float *state_array, float d_bound_i, float roll, float pitc
 
 
   
-  networkEvaluate(&deepreach_output, &deepreach_input);
+  networkEvaluateValue(&deepreach_output, &deepreach_input);
   value = deepreach_output.thrust_0;
   return value;
 }

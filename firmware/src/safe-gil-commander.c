@@ -3,6 +3,7 @@
 #include "param.h"
 #include "controller.h"
 #include "controller_pid.h"
+#include "math3d.h"
 
 #include "app.h"
 #include "FreeRTOS.h"
@@ -10,11 +11,13 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 
 #define DEBUG_MODULE "safe-gil-commander"
 
-#include "network_evaluate_gil.h"
+#include "network_evaluate_gil_value.h"
+#include "network_evaluate_gil_policy.h"
 #include "obst_daq.h"
 
 #include "estimator_kalman.h"
@@ -35,8 +38,34 @@ uint8_t start = 0;
 #define SAFEGIL_IM_TEST // if you want to test safegil im
 
 
+#define ENABLE_SAFETY_FILTER // if you want to filter the policy
 
+#ifdef ENABLE_SAFETY_FILTER
+  static float GZ = 9.81f;
+  static float dt = 0.01f;
 
+  static float state_mean[7] = {2.0000f, -0.2500f, 0.5000f, 0.0000f, 0.0000f, 0.0000f, 0.2500f};
+  static float state_var[7] = {2.0000f, 0.75f, 0.5000f, 1.5000f, 1.5000f, 0.3000f, 0.2500f};
+
+  static float roll_bound = 25.0f;
+  static float pitch_bound = 25.0f;
+  
+  static float roll_opt_control = 0.0f;
+  static float pitch_opt_control = 0.0f;
+
+  float roll_opt_control_min;
+  float roll_opt_control_max;
+  float pitch_opt_control_min;
+  float pitch_opt_control_max;
+
+  float d_bound_i = 0.0;
+
+  static float values[4];
+
+  float current_value;
+
+  static float filter_threshold = 0.1f;
+#endif
 
 
 
@@ -87,6 +116,37 @@ void convertToSetpoint(setpoint_t *setpoint, float roll, float pitch){
   setpoint->attitude.pitch = pitch;
   setpoint->attitudeRate.yaw = 0;
   // setpoint->thrust = thrust;
+}
+
+
+float getValue(const float *state_array, float d_bound_i, float roll, float pitch){
+  float value = 0.0f;
+  struct control_t_n deepreach_output;
+
+  float next_state[6] = {state_array[0], state_array[1], state_array[2], state_array[3], state_array[4], state_array[5]};
+
+  next_state[0] = next_state[0] + next_state[3] * dt;
+  next_state[1] = next_state[1] + next_state[4] * dt;
+  // next_state[2] = next_state[2] + next_state[5] * dt;
+  next_state[3] = next_state[3] + GZ * tan( radians(-pitch));
+  next_state[4] = next_state[4] - GZ * tan( radians(roll));
+
+  // invert y and vy because of the coordinate system of reach
+  next_state[1] = -next_state[1];
+  next_state[4] = -next_state[4];
+
+  
+  float deepreach_input[8] = {1.4f, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], d_bound_i};
+
+  // convert the deepreach_input
+  // input[..., 1:] = (coord[..., 1:] - self.state_mean) / self.state_var
+  for (int i = 1; i < 8; i++) {
+    deepreach_input[i] = (deepreach_input[i] - state_mean[i-1]) / state_var[i-1];
+  }
+
+  networkEvaluateValue(&deepreach_output, &deepreach_input);
+  value = deepreach_output.thrust_0;
+  return value;
 }
 
 
@@ -256,6 +316,8 @@ void appMain() {
   setpoint.mode.yaw = modeAbs;
   setpoint.position.z = height;
 
+  float state_array[6]; 
+
 
   DEBUG_PRINT("Waiting for start\n");
   vTaskDelay(M2T(100));
@@ -295,12 +357,9 @@ void appMain() {
       }
       else{
         counter++;
-        
-
 
         DEBUG_PRINT("HOVER FINISHED\n");
 
-        
         nn_input[0] = getX();
         nn_input[1] = getY();
         nn_input[2] = getVx();
@@ -350,7 +409,7 @@ void appMain() {
           }
           DEBUG_PRINT("Obstacle Inputs: %f, %f, %f, %f, %f, %f, %f, %f\n", nn_input[4], nn_input[5], nn_input[6], nn_input[7], nn_input[8], nn_input[9], nn_input[10], nn_input[11]);
 
-          networkEvaluate(&control_n, &nn_input);
+          networkEvaluatePolicy(&control_n, &nn_input);
           // self.expert_actions_mean = torch.tensor([ 4.8858308e+04, -5.7000000e-02, -1.7360000e+00 ])
           // self.expert_actions_std = torch.tensor([1.293753e+03, 4.344000e+00, 3.436000e+00 ])
           // action_unnormalized = action * self.expert_actions_std + self.expert_actions_mean 
@@ -368,6 +427,71 @@ void appMain() {
 
           control_n.thrust_0 = clip(control_n.thrust_0, roll_lower, roll_upper);
           control_n.thrust_1 = clip(control_n.thrust_1, pitch_lower, pitch_upper);
+
+
+
+
+          #ifdef ENABLE_SAFETY_FILTER
+            // get the state
+            state_array[0] = getX();
+            state_array[1] = getY();
+            state_array[2] = getZ();
+            state_array[3] = getVx();
+            state_array[4] = getVy();
+            state_array[5] = getVz();
+
+            // query the value at current state
+            current_value = getValue(state_array, d_bound_i, control_n.thrust_0, control_n.thrust_1);
+
+            // if value is below treshold
+            // get the optimum control
+            if (current_value < filter_threshold) {
+
+              roll_opt_control_max = roll_bound;
+              roll_opt_control_min = -roll_bound;
+              pitch_opt_control_max = pitch_bound;
+              pitch_opt_control_min = -pitch_bound;
+
+
+              // max pitch max roll
+              values[0] = getValue(state_array, d_bound_i, roll_opt_control_max, pitch_opt_control_max);
+              // max pitch min roll
+              values[1] = getValue(state_array, d_bound_i, roll_opt_control_min, pitch_opt_control_max);
+              // min pitch max roll
+              values[2] = getValue(state_array, d_bound_i, roll_opt_control_max, pitch_opt_control_min);
+              // min pitch min roll
+              values[3] = getValue(state_array, d_bound_i, roll_opt_control_min, pitch_opt_control_min);
+
+              int max_index = 0;
+              float max_value = -1.0f * INFINITY;
+              for (int i = 0; i < 4; i++) {
+                if (values[i] > max_value) {
+                  max_value = values[i];
+                  max_index = i;
+                }
+              }
+
+              if (max_index == 0) {
+                roll_opt_control = roll_opt_control_max;
+                pitch_opt_control = pitch_opt_control_max;
+              } else if (max_index == 1) {
+                roll_opt_control = roll_opt_control_min;
+                pitch_opt_control = pitch_opt_control_max;
+              } else if (max_index == 2) {
+                roll_opt_control = roll_opt_control_max;
+                pitch_opt_control = pitch_opt_control_min;
+              } else if (max_index == 3) {
+                roll_opt_control = roll_opt_control_min;
+                pitch_opt_control = pitch_opt_control_min;
+                // DEBUG_PRINT("roll_opt_control_min: %f\n", roll_opt_control_min);
+              }
+
+              // set the setpoint values to the optimum control
+              control_n.thrust_0 = clip(roll_opt_control, roll_lower, roll_upper);
+              control_n.thrust_1 = clip(pitch_opt_control, pitch_lower, pitch_upper);
+            }
+
+          #endif 
 
           // debug print control_n values
           DEBUG_PRINT(" roll: %f, pitch: %f \n", control_n.thrust_0, control_n.thrust_1);
