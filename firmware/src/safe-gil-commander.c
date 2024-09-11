@@ -74,13 +74,13 @@ uint8_t start = 0;
   float pitch_opt_control_min;
   float pitch_opt_control_max;
 
-  float d_bound_i = 15.0; // Was 0.0
+  float d_bound_i = 15.0/25.0; // Was 0.0
 
   static float values[4];
 
   static float current_value;
 
-  static float filter_threshold = 0.1f;
+  static float filter_threshold = 0.02f;
 
 #endif
 
@@ -170,7 +170,7 @@ void convertToSetpoint(setpoint_t *setpoint, float roll, float pitch){
     float value = 0.0f;
     struct control_t_n deepreach_output;
 
-    // float next_state[6] = {state_array[0], state_array[1], state_array[2], state_array[3], state_array[4], state_array[5]};
+    float next_state[6] = {state_array[0], state_array[1], state_array[2], state_array[3], state_array[4], state_array[5]};
 
     // next_state[0] = next_state[0] + next_state[3] * dt;
     // next_state[1] = next_state[1] + next_state[4] * dt;
@@ -178,12 +178,12 @@ void convertToSetpoint(setpoint_t *setpoint, float roll, float pitch){
     // next_state[3] = next_state[3] + GZ * tan( radians(-pitch));
     // next_state[4] = next_state[4] - GZ * tan( radians(roll));
 
-    // // invert y and vy because of the coordinate system of reach
-    // next_state[1] = -next_state[1];
-    // next_state[4] = -next_state[4];
+    // invert y and vy because of the coordinate system of reach
+    next_state[1] = -next_state[1];
+    next_state[4] = -next_state[4];
 
     
-    float deepreach_input[8] = {1.4f, state_array[0], state_array[1], state_array[2], state_array[3], state_array[4], state_array[5], d_bound_i};
+    float deepreach_input[8] = {1.4f, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], d_bound_i};
 
     // convert the deepreach_input
     // input[..., 1:] = (coord[..., 1:] - self.state_mean) / self.state_var
@@ -547,6 +547,7 @@ void appMain() {
               // set the setpoint values to the optimum control
               control_n.thrust_0 = roll_opt_control;
               control_n.thrust_1 = pitch_opt_control;
+              DEBUG_PRINT("ROLL: %f, PITCH: %f\n", roll_opt_control, pitch_opt_control);
 
             } else {
 
