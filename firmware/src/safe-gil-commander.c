@@ -41,6 +41,22 @@ uint8_t start = 0;
 #define ENABLE_SAFETY_FILTER // if you want to filter the policy
 
 #ifdef ENABLE_SAFETY_FILTER
+  /** Ideal filter parameters: 
+  *  For Two Obstacles (gets stuck):
+  *  roll_bound = 10.0
+  *  pitch_bound = 10.0f
+  *  filter_threshold = 0.15f
+  * 
+  *  roll_bound = 10.0
+  *  pitch_bound = 10.0f
+  *  filter_threshold = 0.1f
+  * 
+  *  For one Obstacle:
+  *  roll_bound = 10.0f
+  *  pitch_bound = 10.0f
+  *  filter_threshold = 0.25f
+  **/ 
+
   static float GZ = 9.81f;
   static float dt = 0.01f;
 
@@ -58,7 +74,7 @@ uint8_t start = 0;
   float pitch_opt_control_min;
   float pitch_opt_control_max;
 
-  float d_bound_i = 0.0;
+  float d_bound_i = 15.0; // Was 0.0
 
   static float values[4];
 
@@ -146,7 +162,7 @@ void convertToSetpoint(setpoint_t *setpoint, float roll, float pitch){
     }
 
     networkEvaluateValue(&deepreach_output, &deepreach_input);
-    value = deepreach_output.thrust_0;
+    value = (deepreach_output.thrust_0 * 1.2 / 0.02) + 0.9;
     return value;
   }
 #endif
@@ -198,7 +214,6 @@ float roll_upper = 25;
 float roll_lower = -25;
 float pitch_upper = 25;
 float pitch_lower = -25;
-
 
 
 static void positionSet(setpoint_t *setpoint, float x, float y, float z, float yaw)
@@ -292,13 +307,12 @@ void appMain() {
 
   // you can set start to 1 here if you want automatic start
 
-
-
-  roll_opt_control_max = roll_bound;
-  roll_opt_control_min = -roll_bound;
-  pitch_opt_control_max = pitch_bound;
-  pitch_opt_control_min = -pitch_bound;
-
+  #ifdef ENABLE_SAFETY_FILTER
+    roll_opt_control_max = roll_bound;
+    roll_opt_control_min = -roll_bound;
+    pitch_opt_control_max = pitch_bound;
+    pitch_opt_control_min = -pitch_bound;
+  #endif
 
   int counter = 0;
 
@@ -326,6 +340,7 @@ void appMain() {
   setpoint.position.z = height;
 
   float state_array[6]; 
+  float prev_state_array[6]; 
 
 
   DEBUG_PRINT("Waiting for start\n");
@@ -343,7 +358,7 @@ void appMain() {
 
 
       if (!hover_yet) {
-        DEBUG_PRINT("START HOVER\n");
+        // DEBUG_PRINT("START HOVER\n");
         vTaskDelay(1000);
         // Hover to 41 cm and wait for the drone to stabilize
         TakeOff(height);
@@ -357,7 +372,7 @@ void appMain() {
         // start recording data
         // set recording parameter to 1
         paramSetInt(recordingId, 1);
-        DEBUG_PRINT("Recording\n");
+        // DEBUG_PRINT("Recording\n");
 
         // for (int i = 0; i < 50; i++) {
         //   headToSetpoint( (float)i / 1000.0f , 0.0f, height, 0.0f); // @TODO: check if this is correct
@@ -367,7 +382,7 @@ void appMain() {
       else{
         counter++;
 
-        DEBUG_PRINT("HOVER FINISHED\n");
+        // DEBUG_PRINT("HOVER FINISHED\n");
 
         nn_input[0] = getX();
         nn_input[1] = getY();
@@ -382,7 +397,7 @@ void appMain() {
 
         if (counter > 390 || nn_input[0]>3.75f || nn_input[1]>1.4f || z>0.7f || nn_input[0]<-0.7f || nn_input[1]<-1.0f || z < 0.2f){
           // stop the drone
-          DEBUG_PRINT("STOPPING\n");
+          // DEBUG_PRINT("STOPPING\n");
           for (int i = 0; i < 10; i++) {
             headToSetpoint(nn_input[0], nn_input[1], z, 0);
             vTaskDelay(30);
@@ -390,10 +405,10 @@ void appMain() {
 
           // set recording parameter to 0
           paramSetInt(recordingId, 0);
-          DEBUG_PRINT("Recording saved\n");
-
+          // DEBUG_PRINT("Recording saved\n");
+ 
           // land the drone
-          DEBUG_PRINT("LANDING\n");
+          // DEBUG_PRINT("LANDING\n");
           Land();
           
           vTaskDelay(1000);
@@ -420,27 +435,26 @@ void appMain() {
           // DEBUG_PRINT("Obstacle Inputs: %f, %f, %f, %f, %f, %f, %f, %f\n", nn_input[4], nn_input[5], nn_input[6], nn_input[7], nn_input[8], nn_input[9], nn_input[10], nn_input[11]); // This debug print is necessary without safety filter
           // this debug print is necessary without safety filter
 
-          networkEvaluatePolicy(&control_n, &nn_input);
-          // self.expert_actions_mean = torch.tensor([ 4.8858308e+04, -5.7000000e-02, -1.7360000e+00 ])
-          // self.expert_actions_std = torch.tensor([1.293753e+03, 4.344000e+00, 3.436000e+00 ])
-          // action_unnormalized = action * self.expert_actions_std + self.expert_actions_mean 
+          #ifndef ENABLE_SAFETY_FILTER
+            networkEvaluatePolicy(&control_n, &nn_input);
+            // self.expert_actions_mean = torch.tensor([ 4.8858308e+04, -5.7000000e-02, -1.7360000e+00 ])
+            // self.expert_actions_std = torch.tensor([1.293753e+03, 4.344000e+00, 3.436000e+00 ])
+            // action_unnormalized = action * self.expert_actions_std + self.expert_actions_mean 
 
-          
-          #ifdef SAFEGIL_IM_TEST
-            // SAFEGIL IM TEST
-            control_n.thrust_0 = control_n.thrust_0 * 7.216f;
-            control_n.thrust_1 = control_n.thrust_1 * 4.801f;
-          #else
-            // BC IM TEST [6.295 4.773]
-            control_n.thrust_0 = control_n.thrust_0 * 6.295f;
-            control_n.thrust_1 = control_n.thrust_1 * 4.773f;
+            
+            #ifdef SAFEGIL_IM_TEST
+              // SAFEGIL IM TEST
+              control_n.thrust_0 = control_n.thrust_0 * 7.216f;
+              control_n.thrust_1 = control_n.thrust_1 * 4.801f;
+            #else
+              // BC IM TEST [6.295 4.773]
+              control_n.thrust_0 = control_n.thrust_0 * 6.295f;
+              control_n.thrust_1 = control_n.thrust_1 * 4.773f;
+            #endif
+
+            control_n.thrust_0 = clip(control_n.thrust_0, roll_lower, roll_upper);
+            control_n.thrust_1 = clip(control_n.thrust_1, pitch_lower, pitch_upper);
           #endif
-
-          control_n.thrust_0 = clip(control_n.thrust_0, roll_lower, roll_upper);
-          control_n.thrust_1 = clip(control_n.thrust_1, pitch_lower, pitch_upper);
-
-
-
 
           #ifdef ENABLE_SAFETY_FILTER
             // get the state
@@ -451,21 +465,27 @@ void appMain() {
             state_array[4] = getVy();
             state_array[5] = getVz();
 
-            // query the value at current state
-            current_value = getValue(state_array, d_bound_i, control_n.thrust_0, control_n.thrust_1);
-
+            // query the value at previous state and previous control.
+            current_value = getValue(prev_state_array, d_bound_i, control_n.thrust_0, control_n.thrust_1);
+            
+            for (int i = 0; i < 6; i++) {
+              prev_state_array[i] = state_array[i];
+            }
             // if value is below treshold
             // get the optimum control
-            if (current_value < filter_threshold) {
+            if ((current_value < filter_threshold) && (state_array[0] > 0.2)) {
+              DEBUG_PRINT("(V,x,y): (%f,%f,%f)\n", current_value, state_array[0], state_array[1]);
+              
+              // DEBUG_PRINT("Activate Safety Filter: %f\n", current_value);
 
               // max pitch max roll
-              values[0] =  getValue(state_array, d_bound_i, roll_opt_control_max, pitch_opt_control_max);
+              values[0] = getValue(state_array, d_bound_i, roll_opt_control_max, pitch_opt_control_max);
               // max pitch min roll
-              values[1] = 0.0; // getValue(state_array, d_bound_i, roll_opt_control_min, pitch_opt_control_max);
+              values[1] = getValue(state_array, d_bound_i, roll_opt_control_min, pitch_opt_control_max);
               // min pitch max roll
-              values[2] = 0.0; //getValue(state_array, d_bound_i, roll_opt_control_max, pitch_opt_control_min);
+              values[2] = getValue(state_array, d_bound_i, roll_opt_control_max, pitch_opt_control_min);
               // min pitch min roll
-              values[3] = 0.0; //getValue(state_array, d_bound_i, roll_opt_control_min, pitch_opt_control_min);
+              values[3] = getValue(state_array, d_bound_i, roll_opt_control_min, pitch_opt_control_min);
 
               int max_index = 0;
               float max_value = -1.0f * INFINITY;
@@ -494,6 +514,27 @@ void appMain() {
               // set the setpoint values to the optimum control
               control_n.thrust_0 = roll_opt_control;
               control_n.thrust_1 = pitch_opt_control;
+
+            } else {
+
+              networkEvaluatePolicy(&control_n, &nn_input);
+              // self.expert_actions_mean = torch.tensor([ 4.8858308e+04, -5.7000000e-02, -1.7360000e+00 ])
+              // self.expert_actions_std = torch.tensor([1.293753e+03, 4.344000e+00, 3.436000e+00 ])
+              // action_unnormalized = action * self.expert_actions_std + self.expert_actions_mean 
+
+              
+              #ifdef SAFEGIL_IM_TEST
+                // SAFEGIL IM TEST
+                control_n.thrust_0 = control_n.thrust_0 * 7.216f;
+                control_n.thrust_1 = control_n.thrust_1 * 4.801f;
+              #else
+                // BC IM TEST [6.295 4.773]
+                control_n.thrust_0 = control_n.thrust_0 * 6.295f;
+                control_n.thrust_1 = control_n.thrust_1 * 4.773f;
+              #endif
+
+              control_n.thrust_0 = clip(control_n.thrust_0, roll_lower, roll_upper);
+              control_n.thrust_1 = clip(control_n.thrust_1, pitch_lower, pitch_upper);
             }
 
           #endif 

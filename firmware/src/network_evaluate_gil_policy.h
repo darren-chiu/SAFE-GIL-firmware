@@ -1,5 +1,5 @@
-#ifndef NETWORK_EVALUATE_TOF_H
-#define NETWORK_EVALUATE_TOF_H
+#ifndef NETWORK_EVALUATE_TOF_POLICY_H
+#define NETWORK_EVALUATE_TOF_POLICY_H
 
 #include <math.h>
 #include <stdbool.h>
