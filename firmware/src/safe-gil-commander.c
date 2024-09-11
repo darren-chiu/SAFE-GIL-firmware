@@ -78,7 +78,7 @@ uint8_t start = 0;
 
   static float values[4];
 
-  float current_value;
+  static float current_value;
 
   static float filter_threshold = 0.1f;
 
@@ -154,6 +154,36 @@ void convertToSetpoint(setpoint_t *setpoint, float roll, float pitch){
 
     
     float deepreach_input[8] = {1.4f, next_state[0], next_state[1], next_state[2], next_state[3], next_state[4], next_state[5], d_bound_i};
+
+    // convert the deepreach_input
+    // input[..., 1:] = (coord[..., 1:] - self.state_mean) / self.state_var
+    for (int i = 1; i < 8; i++) {
+      deepreach_input[i] = (deepreach_input[i] - state_mean[i-1]) / state_var[i-1];
+    }
+
+    networkEvaluateValue(&deepreach_output, &deepreach_input);
+    value = (deepreach_output.thrust_0 * 1.2 / 0.02) + 0.9;
+    return value;
+  }
+
+  float getCurrentValue(const float *state_array, float d_bound_i){
+    float value = 0.0f;
+    struct control_t_n deepreach_output;
+
+    // float next_state[6] = {state_array[0], state_array[1], state_array[2], state_array[3], state_array[4], state_array[5]};
+
+    // next_state[0] = next_state[0] + next_state[3] * dt;
+    // next_state[1] = next_state[1] + next_state[4] * dt;
+    // // next_state[2] = next_state[2] + next_state[5] * dt;
+    // next_state[3] = next_state[3] + GZ * tan( radians(-pitch));
+    // next_state[4] = next_state[4] - GZ * tan( radians(roll));
+
+    // // invert y and vy because of the coordinate system of reach
+    // next_state[1] = -next_state[1];
+    // next_state[4] = -next_state[4];
+
+    
+    float deepreach_input[8] = {1.4f, state_array[0], state_array[1], state_array[2], state_array[3], state_array[4], state_array[5], d_bound_i};
 
     // convert the deepreach_input
     // input[..., 1:] = (coord[..., 1:] - self.state_mean) / self.state_var
@@ -466,11 +496,14 @@ void appMain() {
             state_array[5] = getVz();
 
             // query the value at previous state and previous control.
-            current_value = getValue(prev_state_array, d_bound_i, control_n.thrust_0, control_n.thrust_1);
+            // current_value = getValue(prev_state_array, d_bound_i, control_n.thrust_0, control_n.thrust_1);
+
+            // query the value at previous state and previous control.
+            current_value = getCurrentValue(state_array, d_bound_i);
             
-            for (int i = 0; i < 6; i++) {
-              prev_state_array[i] = state_array[i];
-            }
+            // for (int i = 0; i < 6; i++) {
+            //   prev_state_array[i] = state_array[i];
+            // }
             // if value is below treshold
             // get the optimum control
             if ((current_value < filter_threshold) && (state_array[0] > 0.2)) {
@@ -576,8 +609,11 @@ void appMain() {
 
 }
 
-
-// LOG_GROUP_START(gil)
+// Value, Desired Control
+LOG_GROUP_START(gil)
+LOG_ADD(LOG_FLOAT, value, &current_value)
+LOG_ADD(LOG_FLOAT, control_r, &control_n.thrust_0)
+LOG_ADD(LOG_FLOAT, control_p, &control_n.thrust_1)
 // LOG_ADD(LOG_FLOAT, obs1, &obstacle_inputs[0])
 // LOG_ADD(LOG_FLOAT, obs2, &obstacle_inputs[1])
 // LOG_ADD(LOG_FLOAT, obs3, &obstacle_inputs[2])
@@ -586,7 +622,7 @@ void appMain() {
 // LOG_ADD(LOG_FLOAT, obs6, &obstacle_inputs[5])
 // LOG_ADD(LOG_FLOAT, obs7, &obstacle_inputs[6])
 // LOG_ADD(LOG_FLOAT, obs8, &obstacle_inputs[7])
-// LOG_GROUP_STOP(gil)
+LOG_GROUP_STOP(gil)
 
 
 
