@@ -47,7 +47,7 @@ uint8_t start = 0;
   *  pitch_bound = 10.0f
   *  filter_threshold = 0.15f
   * 
-  *  roll_bound = 10.0
+  *  roll_bound = 10.0  // d bound is 0 for this
   *  pitch_bound = 10.0f
   *  filter_threshold = 0.1f
   * 
@@ -63,8 +63,8 @@ uint8_t start = 0;
   static float state_mean[7] = {2.0000f, -0.2500f, 0.5000f, 0.0000f, 0.0000f, 0.0000f, 0.2500f};
   static float state_var[7] = {2.0000f, 0.75f, 0.5000f, 1.5000f, 1.5000f, 0.3000f, 0.2500f};
 
-  static float roll_bound = 25.0f;
-  static float pitch_bound = 25.0f;
+  static float roll_bound = 10.0f;
+  static float pitch_bound = 10.0f;
   
   static float roll_opt_control = 0.0f;
   static float pitch_opt_control = 0.0f;
