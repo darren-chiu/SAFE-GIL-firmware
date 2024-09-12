@@ -63,8 +63,8 @@ uint8_t start = 0;
   static float state_mean[7] = {2.0000f, -0.2500f, 0.5000f, 0.0000f, 0.0000f, 0.0000f, 0.2500f};
   static float state_var[7] = {2.0000f, 0.75f, 0.5000f, 1.5000f, 1.5000f, 0.3000f, 0.2500f};
 
-  static float roll_bound = 10.0f;
-  static float pitch_bound = 10.0f;
+  static float roll_bound = 15.0f;
+  static float pitch_bound = 15.0f;
   
   static float roll_opt_control = 0.0f;
   static float pitch_opt_control = 0.0f;
@@ -74,13 +74,13 @@ uint8_t start = 0;
   float pitch_opt_control_min;
   float pitch_opt_control_max;
 
-  float d_bound_i = 15.0/25.0; // Was 0.0
+  float d_bound_i = 10.0/25.0; // Was 0.0
 
   static float values[4];
 
   static float current_value;
 
-  static float filter_threshold = 0.02f;
+  static float filter_threshold = 0.0f;
 
 #endif
 
@@ -569,6 +569,7 @@ void appMain() {
 
               control_n.thrust_0 = clip(control_n.thrust_0, roll_lower, roll_upper);
               control_n.thrust_1 = clip(control_n.thrust_1, pitch_lower, pitch_upper);
+
             }
 
           #endif 
