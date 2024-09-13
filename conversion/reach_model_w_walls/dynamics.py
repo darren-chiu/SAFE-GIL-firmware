@@ -328,10 +328,10 @@ class Drone6DConditioned(Dynamics):
         dsdt = torch.zeros_like(state)
         dsdt[..., 0] = state[...,3]
         dsdt[..., 1] = state[...,4]
-        dsdt[..., 2] = state[...,5]
+        dsdt[..., 2] = state[...,5] # we are not uzing z
         dsdt[..., 3] = self.g*torch.tan(control[...,2]-disturbance[...,2])
         dsdt[..., 4] = -self.g*torch.tan(control[...,1]-disturbance[...,1])
-        dsdt[..., 5] = (control[...,0]-disturbance[...,0])-self.g
+        dsdt[..., 5] = (control[...,0]-disturbance[...,0])-self.g # we are not uzing vz
         return dsdt
     def boundary_fn(self, state):
         dist=torch.ones_like(state[...,-1], device=state.device)*9999

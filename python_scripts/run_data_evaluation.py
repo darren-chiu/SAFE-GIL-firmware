@@ -124,8 +124,8 @@ def plot_traj_value(data, directory):
     
     fig_c = plt.figure(figsize=(4,2))
     ax = plt.gca()
-    plt.plot(estimatey, control_r, label='Roll')
-    plt.plot(estimatey, control_p, label='Pitch')
+    plt.plot( control_r, label='Roll')
+    plt.plot( control_p, label='Pitch')
     ax.grid(True)
     ax.legend()
     plt.title("Safety Filter Control")
@@ -572,7 +572,7 @@ if __name__ == "__main__":
     for test_case in test_case_list:
         #Search Test Setup (Pillar Placement)
         for folder in os.listdir(test_case):
-            data_total = []   
+            data_total = []
             if ('.' not in folder):
                 #Search all files in Setup
                 for file in os.listdir(os.path.join(test_case,folder)):
