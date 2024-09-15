@@ -80,7 +80,7 @@ def plot_traj_value(data, directory):
     
     value_threshold = 0.0
                         
-    fig = plt.figure(figsize=(3,5))
+    fig = plt.figure(figsize=(4,5))
 
     estimatex = data['stateEstimate.x']
     estimatey = data['stateEstimate.y']
@@ -104,20 +104,21 @@ def plot_traj_value(data, directory):
         plt.scatter(estimatey[stop_index], estimatex[stop_index], 20, marker="x", c='Red', zorder=50)    
 
     plt.scatter(estimatey[:stop_index], estimatex[:stop_index], c=value[:stop_index], cmap='inferno', s=1.5, label="Deployed")
-    plt.colorbar(orientation='vertical',shrink=0.4, label='Value')
+    clb = plt.colorbar(orientation='vertical',shrink=0.4)
+    clb.ax.set_title('Value', size=10)
+
+    # if ("log06" in directory):
+    #     # If we are using log06 then we must add in the sim filter.
+    #     sim_states = np.load("data/safety_filter/w22_part2_parameter_change/sim_filter_states.npy", allow_pickle=True)
     
-    if ("log06" in directory):
-        # If we are using log06 then we must add in the sim filter.
-        sim_states = np.load("data/safety_filter/w22_part2_parameter_change/sim_filter_states.npy", allow_pickle=True)
+    #     plt.scatter(sim_states[:,1], sim_states[:,0], s=1.5, label='Simulated',c='Blue')
     
-        plt.scatter(sim_states[:,1], sim_states[:,0], s=1.5, label='Simulated',c='Blue')
-    
-    value_index = np.where(np.array(value) < value_threshold)
-    i = 0
-    for index in value_index[0]:
-        if (index < stop_index):
-            plt.scatter(estimatey[index], estimatex[index], facecolors='none', edgecolors='Green', s=1.5, zorder=50, label="Filter Intervention" if i == 0 else "")
-        i += 1
+    # value_index = np.where(np.array(value) < value_threshold)
+    # i = 0
+    # for index in value_index[0]:
+    #     if (index < stop_index):
+    #         plt.scatter(estimatey[index], estimatex[index], facecolors='none', edgecolors='Green', s=1.5, zorder=50, label="Filter Intervention" if i == 0 else "")
+    #     i += 1
     draw_im_obstacles(fig, directory)
 
     ax = plt.gca()
@@ -134,7 +135,7 @@ def plot_traj_value(data, directory):
 
     plt.title("Safety Filter Comparison")
 
-    # plt.tight_layout()
+    plt.tight_layout()
     plt.savefig(directory + "_traj.jpg", dpi=800, bbox_inches='tight') 
     
     plt.close()
@@ -244,20 +245,20 @@ def plot_im_traj(data_list, directory):
     fig = plt.figure(figsize=(2,4))
 
     for data in data_list:
+    
         estimatex = data['stateEstimate.x']
         estimatey = data['stateEstimate.y']
         estimatey = [x * -1 for x in estimatey]
         estimatez = data['stateEstimate.z']
         
-        # Find when drone crashes
-        stop_index = next((x for x, val in enumerate(estimatez) if val < 0.38), -1) 
-        stop_index = check_collision(estimatex, estimatey, directory)
-        stop_index = -1
+        # # Find when drone crashes
+        stop_index = next((x for x, val in enumerate(estimatez) if val < 0.35), -1) 
+        stop_index = check_collision(estimatex, estimatey, estimatez, directory)
         
         #Plot up to then
         if (stop_index < (len(estimatex) - 1)):
             plt.scatter(estimatey[stop_index], estimatex[stop_index], 20, marker="x", color='r', zorder=50)    
-        stop_index = -1
+
         plt.plot(estimatey[:stop_index], estimatex[:stop_index])
 
 
@@ -280,6 +281,8 @@ def plot_im_traj(data_list, directory):
     plt.tight_layout()
     plt.savefig(directory + "_traj.jpg", dpi=800, bbox_inches='tight') 
 
+    plt.close()
+    
 def plot_avg_std_error(data_list, data_len, directory):
 
     batch_data_points = len(data_list)
@@ -584,7 +587,7 @@ if __name__ == "__main__":
 
     # plot_dem_data()
 
-    test_case_list = ['data/safety_filter/']
+    test_case_list = ['data/im_test_5_safegil/']
     #Search Network Test 
     for test_case in tqdm(test_case_list, leave=False):
         #Search Test Setup (Pillar Placement)
@@ -598,7 +601,7 @@ if __name__ == "__main__":
                         print(f'Evaluating on data {filename}...')
                         try:
                             data = decode(filename)["fixedFrequency"] # Store data as dictionary
-                            plot_traj_value(data, filename)
+                            # plot_traj_value(data, filename)
                             data_total.append(data)
                         except Exception as error:
                             # handle the exceptio
@@ -609,7 +612,7 @@ if __name__ == "__main__":
                         # plot_error(data,filename)
                     
         # plot_avg_std_error(data_total, data_len, folder)
-            # plot_im_traj(data_total, filename)
+            plot_im_traj(data_total, filename)
 
             # plot_obs_traj(data_total, filename)
 
