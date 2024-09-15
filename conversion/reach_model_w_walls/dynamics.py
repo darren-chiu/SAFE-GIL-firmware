@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-# from utils import diff_operators, quaternion
+import diff_operators
 
 import math
 import torch

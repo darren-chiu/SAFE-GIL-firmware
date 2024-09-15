@@ -13,10 +13,16 @@ import math
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 data_total = []
-w11 = [(0.245, 1.67), (-0.585, 3.02)]
-w22 = [(-0.085, 1.67), (0.245, 1.67), (-0.395, 3.02), (-0.715, 3.02)]
-w23 = [(-0.085, 1.67), (0.245, 1.67), (-0.385, 3.02), (-0.705, 3.02), (-0.065, 3.02)]
-closer = [(-0.085, 1.67), (0.245, 1.67), (-0.255, 2.62), (-0.585, 2.62)]
+offset = -0.23
+
+w11 = [(0.245 + offset, 1.67), (-0.585, 3.02)]
+w22 = [(-0.085 + offset, 1.67), (0.245 + offset, 1.67), (-0.395, 3.02), (-0.715, 3.02)]
+w23 = [(-0.085 + offset, 1.67), (0.245 + offset, 1.67), (-0.385, 3.02), (-0.705, 3.02), (-0.065, 3.02)]
+closer = [(-0.085 + offset, 1.67), (0.245 + offset, 1.67), (-0.255, 2.62), (-0.585, 2.62)]
+# w11 = [(0.245, 1.67), (-0.585, 3.02)]
+# w22 = [(-0.105, 1.67), (0.265, 1.67), (-0.395, 3.02), (-0.715, 3.02)]
+# w23 = [(-0.105, 1.67), (0.265, 1.67), (-0.385, 3.02), (-0.705, 3.02), (-0.065, 3.02)]
+# closer = [(-0.105, 1.67), (0.265, 1.67), (-0.255, 2.62), (-0.585, 2.62)]
 radius = 0.165
 obst_color = 'silver'
 
@@ -74,7 +80,7 @@ def plot_traj_value(data, directory):
     
     value_threshold = 0.0
                         
-    fig = plt.figure(figsize=(2,4))
+    fig = plt.figure(figsize=(3,5))
 
     estimatex = data['stateEstimate.x']
     estimatey = data['stateEstimate.y']
@@ -86,50 +92,61 @@ def plot_traj_value(data, directory):
     control_p = data['gil.control_p']
     
     # Find when drone crashes
-    stop_index = next((x for x, val in enumerate(estimatez) if val < 0.39), -1) 
-    stop_index = check_collision(estimatex, estimatey, estimatez, directory)
+    if ("log06" in directory):
+        # stop_index = check_collision(estimatex, estimatey, estimatez, directory)
+        stop_index = next((x for x, val in enumerate(estimatey) if val > 0.6), -1) 
+    else:
+        stop_index = next((x for x, val in enumerate(estimatez) if val < 0.39), -1) 
+        stop_index = check_collision(estimatex, estimatey, estimatez, directory)
     
     #Plot up to then
     if (stop_index < (len(estimatex) - 1)):
         plt.scatter(estimatey[stop_index], estimatex[stop_index], 20, marker="x", c='Red', zorder=50)    
 
-    plt.scatter(estimatey[:stop_index], estimatex[:stop_index], c=value[:stop_index], cmap='inferno', s=2.0)
-
+    plt.scatter(estimatey[:stop_index], estimatex[:stop_index], c=value[:stop_index], cmap='inferno', s=1.5, label="Deployed")
+    plt.colorbar(orientation='vertical',shrink=0.4, label='Value')
+    
+    if ("log06" in directory):
+        # If we are using log06 then we must add in the sim filter.
+        sim_states = np.load("data/safety_filter/w22_part2_parameter_change/sim_filter_states.npy", allow_pickle=True)
+    
+        plt.scatter(sim_states[:,1], sim_states[:,0], s=1.5, label='Simulated',c='Blue')
+    
     value_index = np.where(np.array(value) < value_threshold)
+    i = 0
     for index in value_index[0]:
         if (index < stop_index):
-            plt.scatter(estimatey[index], estimatex[index], marker="o", c='Green', s=0.1, zorder=50)
-    
-            
+            plt.scatter(estimatey[index], estimatex[index], facecolors='none', edgecolors='Green', s=1.5, zorder=50, label="Filter Intervention" if i == 0 else "")
+        i += 1
     draw_im_obstacles(fig, directory)
 
     ax = plt.gca()
     # divider = make_axes_locatable(ax)
     # cax = divider.append_axes('right', size='5%', pad=0.05)
-    plt.colorbar(orientation='vertical',shrink=0.4)
     
     ax.grid(True)
-    ax.set_xlabel("x (m)")
-    ax.set_ylabel("y (m)")
+    ax.set_xlabel("y (m)")
+    ax.set_ylabel("x (m)")
     ax.set_xlim([-1, 1])
-    ax.set_ylim([0, 5])
+    ax.set_ylim([0, 4])
     ax.set_aspect('equal')
+    plt.legend(loc='upper left')
 
-    plt.title("Safety Filter")
+    plt.title("Safety Filter Comparison")
 
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.savefig(directory + "_traj.jpg", dpi=800, bbox_inches='tight') 
     
     plt.close()
     
-    fig_c = plt.figure(figsize=(4,2))
-    ax = plt.gca()
-    plt.plot( control_r, label='Roll')
-    plt.plot( control_p, label='Pitch')
-    ax.grid(True)
-    ax.legend()
-    plt.title("Safety Filter Control")
-    plt.savefig(directory + "_control.jpg", dpi=800, bbox_inches='tight') 
+    # fig_c = plt.figure(figsize=(4,2))
+    # ax = plt.gca()
+    # plt.plot( control_r, label='Roll')
+    # plt.plot( control_p, label='Pitch')
+    # ax.grid(True)
+    # ax.legend()
+    # plt.title("Safety Filter Control")
+    # plt.savefig(directory + "_control.jpg", dpi=800, bbox_inches='tight') 
     
     plt.close()
         
@@ -569,13 +586,13 @@ if __name__ == "__main__":
 
     test_case_list = ['data/safety_filter/']
     #Search Network Test 
-    for test_case in test_case_list:
+    for test_case in tqdm(test_case_list, leave=False):
         #Search Test Setup (Pillar Placement)
-        for folder in os.listdir(test_case):
+        for folder in tqdm(os.listdir(test_case), leave=False):
             data_total = []
             if ('.' not in folder):
                 #Search all files in Setup
-                for file in os.listdir(os.path.join(test_case,folder)):
+                for file in tqdm(os.listdir(os.path.join(test_case,folder)), leave=False):
                     if ('.' not in file):
                         filename = os.path.join(test_case, folder, file)
                         print(f'Evaluating on data {filename}...')
@@ -583,14 +600,16 @@ if __name__ == "__main__":
                             data = decode(filename)["fixedFrequency"] # Store data as dictionary
                             plot_traj_value(data, filename)
                             data_total.append(data)
-                        except:
-                            print("Failed to read data!") 
+                        except Exception as error:
+                            # handle the exceptio
+                            # pass
+                            print("Failed to Read: ", error) # An exception occurred: division by zero
                         
                         # plot_traj(data,filename)
                         # plot_error(data,filename)
-                        
-            # plot_avg_std_error(data_total, data_len, folder)
-                # plot_im_traj(data_total, filename)
+                    
+        # plot_avg_std_error(data_total, data_len, folder)
+            # plot_im_traj(data_total, filename)
 
-                # plot_obs_traj(data_total, filename)
+            # plot_obs_traj(data_total, filename)
 
