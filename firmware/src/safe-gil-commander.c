@@ -38,7 +38,7 @@ uint8_t start = 0;
 // #define SAFEGIL_IM_TEST // if you want to test safegil im
 
 
-#define ENABLE_SAFETY_FILTER // if you want to filter the policy
+// #define ENABLE_SAFETY_FILTER // if you want to filter the policy
 
 #ifdef ENABLE_SAFETY_FILTER
   /** Ideal filter parameters: 
@@ -613,17 +613,17 @@ void appMain() {
 
 // Value, Desired Control
 LOG_GROUP_START(gil)
-LOG_ADD(LOG_FLOAT, value, &current_value)
+// LOG_ADD(LOG_FLOAT, value, &current_value)
 LOG_ADD(LOG_FLOAT, control_r, &control_n.thrust_0)
 LOG_ADD(LOG_FLOAT, control_p, &control_n.thrust_1)
-// LOG_ADD(LOG_FLOAT, obs1, &obstacle_inputs[0])
-// LOG_ADD(LOG_FLOAT, obs2, &obstacle_inputs[1])
-// LOG_ADD(LOG_FLOAT, obs3, &obstacle_inputs[2])
-// LOG_ADD(LOG_FLOAT, obs4, &obstacle_inputs[3])
-// LOG_ADD(LOG_FLOAT, obs5, &obstacle_inputs[4])
-// LOG_ADD(LOG_FLOAT, obs6, &obstacle_inputs[5])
-// LOG_ADD(LOG_FLOAT, obs7, &obstacle_inputs[6])
-// LOG_ADD(LOG_FLOAT, obs8, &obstacle_inputs[7])
+LOG_ADD(LOG_FLOAT, obs1, &obstacle_inputs[0])
+LOG_ADD(LOG_FLOAT, obs2, &obstacle_inputs[1])
+LOG_ADD(LOG_FLOAT, obs3, &obstacle_inputs[2])
+LOG_ADD(LOG_FLOAT, obs4, &obstacle_inputs[3])
+LOG_ADD(LOG_FLOAT, obs5, &obstacle_inputs[4])
+LOG_ADD(LOG_FLOAT, obs6, &obstacle_inputs[5])
+LOG_ADD(LOG_FLOAT, obs7, &obstacle_inputs[6])
+LOG_ADD(LOG_FLOAT, obs8, &obstacle_inputs[7])
 LOG_GROUP_STOP(gil)
 
 
@@ -637,7 +637,3 @@ PARAM_GROUP_START(im_test)
  */
 PARAM_ADD_CORE(PARAM_UINT8, start, &start)
 PARAM_GROUP_STOP(im_test)
-
-
-
-
