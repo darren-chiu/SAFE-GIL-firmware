@@ -5,4 +5,5 @@ obj-y += network_evaluate_gil_policy.o
 # Low Level Control
 # obj-y += safe-gil-controller.o
 # High Level Setpoint
-obj-y += safe-gil-commander.o
+# obj-y += safe-gil-commander.o
+obj-y += mpcsafe-gil-commander.o

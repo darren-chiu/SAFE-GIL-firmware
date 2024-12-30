@@ -6,6 +6,7 @@ See App layer API guide and build instructions [here](https://www.bitcraze.io/do
 
 
 
+/Users/umut/projects/lab/crazyfile/SAFE-GIL-firmware/firmware
 
 make clean
 
