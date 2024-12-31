@@ -1,0 +1,132 @@
+
+---------------------------------------- 
+
+ 2024-12-14 16:38:24.521423 
+
+ expert_safegil 
+
+ 0 
+
+ 100 
+
+ success rate: 1.0 
+
+ collision rate: 0.0 
+
+ not success rate: 0.0 
+
+ safe rate: 1.0 
+
+ mean max y: 4.0 
+
+ se max y: 0.0 
+
+---------------------------------------- 
+
+ 2024-12-14 16:42:19.241122 
+
+ expert_safegil 
+
+ 0 
+
+ 100 
+
+ success rate: 1.0 
+
+ collision rate: 0.0 
+
+ not success rate: 0.0 
+
+ safe rate: 1.0 
+
+ mean max y: 4.0 
+
+ se max y: 0.0 
+
+---------------------------------------- 
+
+ 2024-12-14 16:44:25.584562 
+
+ expert_safegil 
+
+ 0 
+
+ 100 
+
+ success rate: 0.98 
+
+ collision rate: 0.02 
+
+ not success rate: 0.0 
+
+ safe rate: 0.98 
+
+ mean max y: 3.986011348382125 
+
+ se max y: 0.009794800363076612 
+
+---------------------------------------- 
+
+ 2024-12-14 17:10:10.778797 
+
+ expert_safegil 
+
+ 0 
+
+ 100 
+
+ success rate: 0.97 
+
+ collision rate: 0.02 
+
+ not success rate: 0.01 
+
+ safe rate: 0.98 
+
+ mean max y: 3.9643672785745623 
+
+ se max y: 0.023530061354917902 
+
+---------------------------------------- 
+
+ 2024-12-16 15:54:10.574015 
+
+ expert_safegil 
+
+ 0 
+
+ 100 
+
+ success rate: 0.97 
+
+ collision rate: 0.02 
+
+ not success rate: 0.01 
+
+ safe rate: 0.98 
+
+ mean max y: 3.9643672785745623 
+
+ se max y: 0.023530061354917902 
+
+---------------------------------------- 
+
+ 2024-12-16 15:58:34.756592 
+
+ expert_safegil 
+
+ 0 
+
+ 100 
+
+ success rate: 0.97 
+
+ collision rate: 0.02 
+
+ not success rate: 0.01 
+
+ safe rate: 0.98 
+
+ mean max y: 3.9643672785745623 
+
+ se max y: 0.023530061354917902 

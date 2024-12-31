@@ -1,0 +1,108 @@
+
+---------------------------------------- 
+
+ 2024-12-12 16:26:15.722894 
+
+ expert 
+
+ 0 
+
+ 100 
+
+ success rate: 0.74 
+
+ collision rate: 0.26 
+
+ not success rate: 0.0 
+
+ safe rate: 0.74 
+
+---------------------------------------- 
+
+ 2024-12-12 16:27:57.144856 
+
+ expert 
+
+ 0 
+
+ 100 
+
+ success rate: 0.68 
+
+ collision rate: 0.32 
+
+ not success rate: 0.0 
+
+ safe rate: 0.68 
+
+---------------------------------------- 
+
+ 2024-12-12 16:29:10.674624 
+
+ expert 
+
+ 0 
+
+ 100 
+
+ success rate: 0.98 
+
+ collision rate: 0.02 
+
+ not success rate: 0.0 
+
+ safe rate: 0.98 
+
+---------------------------------------- 
+
+ 2024-12-12 16:30:30.511197 
+
+ expert 
+
+ 0 
+
+ 100 
+
+ success rate: 0.98 
+
+ collision rate: 0.02 
+
+ not success rate: 0.0 
+
+ safe rate: 0.98 
+
+---------------------------------------- 
+
+ 2024-12-12 16:31:42.762771 
+
+ expert 
+
+ 0 
+
+ 100 
+
+ success rate: 1.0 
+
+ collision rate: 0.0 
+
+ not success rate: 0.0 
+
+ safe rate: 1.0 
+
+---------------------------------------- 
+
+ 2024-12-12 18:23:29.012473 
+
+ expert 
+
+ 0 
+
+ 100 
+
+ success rate: 1.0 
+
+ collision rate: 0.0 
+
+ not success rate: 0.0 
+
+ safe rate: 1.0 

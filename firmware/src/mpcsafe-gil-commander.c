@@ -36,7 +36,7 @@ uint8_t start = 0;
 
 
 // TODO MAKE THE SENSOR READINGS SAME ORDER (GUESS: REVERT THEM)
-// TODO DO THE INPUT AND OUTPUT SCALEINGS OF THE POLICY NETWORK
+// TODO DO THE INPUT AND OUTPUT SCALEINGS OF THE POLICY NETWORK done
 
 
 // #define SAFEGIL_IM_TEST // if you want to test safegil im
@@ -238,16 +238,11 @@ float clip(float n, float lower, float upper) {
   return fmax(lower, fmin(n, upper));
 }
 
-
-
-// control_bounds = [torch.tensor([40000, -25, -25]), torch.tensor([60000, 25, 25]) ]
-
-// float thrust_upper = 60000;
-// float thrust_lower = 40000;
-float roll_upper = 25;
-float roll_lower = -25;
-float pitch_upper = 25;
-float pitch_lower = -25;
+// 0.3 radians to degrees
+float roll_upper = 3.0f * 180.0f / 3.14159265359f;
+float roll_lower = -3.0f * 180.0f / 3.14159265359f;
+float pitch_upper = 3.0f * 180.0f / 3.14159265359f;
+float pitch_lower = -3.0f * 180.0f / 3.14159265359f;
 
 
 static void positionSet(setpoint_t *setpoint, float x, float y, float z, float yaw)
@@ -339,8 +334,6 @@ void appMain() {
 
   recordingId = paramGetVarId("usd", "logging");
 
-  // you can set start to 1 here if you want automatic start
-
   #ifdef ENABLE_SAFETY_FILTER
     roll_opt_control_max = roll_bound;
     roll_opt_control_min = -roll_bound;
@@ -389,8 +382,6 @@ void appMain() {
 
     if (start) {
 
-
-
       if (!hover_yet) {
         // DEBUG_PRINT("START HOVER\n");
         vTaskDelay(1000);
@@ -408,10 +399,6 @@ void appMain() {
         paramSetInt(recordingId, 1);
         // DEBUG_PRINT("Recording\n");
 
-        // for (int i = 0; i < 50; i++) {
-        //   headToSetpoint( (float)i / 1000.0f , 0.0f, height, 0.0f); // @TODO: check if this is correct
-        //   vTaskDelay(20);
-        // }
       }
       else{
         counter++;
@@ -425,7 +412,7 @@ void appMain() {
         z = getZ();
 
 
-        DEBUG_PRINT("State: %f, %f, %f, %f\n", x, y, nn_input[0], nn_input[1]); // This debug print is necessary without safety filter
+        DEBUG_PRINT("State: x:%f, y:%f, vx:%f, vy:%f\n", x, y, nn_input[0], nn_input[1]); // This debug print is necessary without safety filter
         // this debug print is necessary without safety filter
 
 
@@ -466,8 +453,9 @@ void appMain() {
           }
 
           // putting the rounded observation inputs to the nn_input array
+          // note that in the simulation the observation order is reversed. therefor you need to reverse the input order here. 
           for (int i=0;i<8;i++) {
-            nn_input[2+i] = ((roundf(obstacle_inputs[i] * 100) / 100) - 2.0f) / 16.0f; // for centered obs
+            nn_input[2+i] = ((roundf(obstacle_inputs[7-i] * 100) / 100) - 2.0f) / 2.0f; // for centered obs // TODO: CHECK THIS REVERSAL
           }
           DEBUG_PRINT("Obstacle Inputs: %f, %f, %f, %f, %f, %f, %f, %f\n", nn_input[2], nn_input[3], nn_input[4], nn_input[5], nn_input[6], nn_input[7], nn_input[8], nn_input[9]); // This debug print is necessary without safety filter
           // this debug print is necessary without safety filter
@@ -478,17 +466,9 @@ void appMain() {
             // self.expert_actions_std = torch.tensor([1.293753e+03, 4.344000e+00, 3.436000e+00 ])
             // action_unnormalized = action * self.expert_actions_std + self.expert_actions_mean 
 
+            control_n.thrust_0 = control_n.thrust_0 * roll_upper;
+            control_n.thrust_1 = control_n.thrust_1 * pitch_upper;
             
-            #ifdef SAFEGIL_IM_TEST
-              // SAFEGIL IM TEST
-              control_n.thrust_0 = control_n.thrust_0 * 7.216f;
-              control_n.thrust_1 = control_n.thrust_1 * 4.801f;
-            #else
-              // BC IM TEST [6.295 4.773]
-              control_n.thrust_0 = control_n.thrust_0 * 6.295f;
-              control_n.thrust_1 = control_n.thrust_1 * 4.773f;
-            #endif
-
             control_n.thrust_0 = clip(control_n.thrust_0, roll_lower, roll_upper);
             control_n.thrust_1 = clip(control_n.thrust_1, pitch_lower, pitch_upper);
           #endif
@@ -579,12 +559,11 @@ void appMain() {
 
             }
 
-          #endif 
+          #endif
 
           // debug print control_n values
           // DEBUG_PRINT(" roll: %f, pitch: %f \n", control_n.thrust_0, control_n.thrust_1); // This debug print is necessary without safety filter
           // this debug print is necessary without safety filter
-
           
           // convert to setpoint
           convertToSetpoint( &setpoint, control_n.thrust_0, control_n.thrust_1);
@@ -596,10 +575,7 @@ void appMain() {
           // headToSetpoint(0.0f, 0.0f, height, 0.0f);
           // vTaskDelay(30);
         }
-
-
       }
-
     }
     else {
       // dont do anything

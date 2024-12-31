@@ -1,0 +1,132 @@
+
+---------------------------------------- 
+
+ 2024-12-14 16:38:22.330357 
+
+ expert 
+
+ 0 
+
+ 100 
+
+ success rate: 0.96 
+
+ collision rate: 0.04 
+
+ not success rate: 0.0 
+
+ safe rate: 0.96 
+
+ mean max y: 3.9558645938172994 
+
+ se max y: 0.023790652961677615 
+
+---------------------------------------- 
+
+ 2024-12-14 16:42:17.061620 
+
+ expert 
+
+ 0 
+
+ 100 
+
+ success rate: 0.96 
+
+ collision rate: 0.04 
+
+ not success rate: 0.0 
+
+ safe rate: 0.96 
+
+ mean max y: 3.9558645938172994 
+
+ se max y: 0.023790652961677615 
+
+---------------------------------------- 
+
+ 2024-12-14 16:44:22.713969 
+
+ expert 
+
+ 0 
+
+ 100 
+
+ success rate: 0.36 
+
+ collision rate: 0.64 
+
+ not success rate: 0.0 
+
+ safe rate: 0.36 
+
+ mean max y: 3.2236852977456305 
+
+ se max y: 0.07197953997026516 
+
+---------------------------------------- 
+
+ 2024-12-14 17:10:07.270440 
+
+ expert 
+
+ 0 
+
+ 100 
+
+ success rate: 0.32 
+
+ collision rate: 0.68 
+
+ not success rate: 0.0 
+
+ safe rate: 0.32 
+
+ mean max y: 3.2138263609044087 
+
+ se max y: 0.07084225358340203 
+
+---------------------------------------- 
+
+ 2024-12-16 15:54:07.417521 
+
+ expert 
+
+ 0 
+
+ 100 
+
+ success rate: 0.32 
+
+ collision rate: 0.68 
+
+ not success rate: 0.0 
+
+ safe rate: 0.32 
+
+ mean max y: 3.2138263609044087 
+
+ se max y: 0.07084225358340203 
+
+---------------------------------------- 
+
+ 2024-12-16 15:58:31.601150 
+
+ expert 
+
+ 0 
+
+ 100 
+
+ success rate: 0.32 
+
+ collision rate: 0.68 
+
+ not success rate: 0.0 
+
+ safe rate: 0.32 
+
+ mean max y: 3.2138263609044087 
+
+ se max y: 0.07084225358340203 

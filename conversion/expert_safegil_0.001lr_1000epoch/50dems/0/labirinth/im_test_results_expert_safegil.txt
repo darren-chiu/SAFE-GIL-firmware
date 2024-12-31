@@ -1,0 +1,78 @@
+
+---------------------------------------- 
+
+ 2024-12-10 15:04:46.898986 
+
+ expert_safegil 
+
+ 0 
+
+ 50 
+
+ success rate: 0.9 
+
+---------------------------------------- 
+
+ 2024-12-11 21:05:02.028471 
+
+ expert_safegil 
+
+ 0 
+
+ 50 
+
+ success rate: 0.9 
+
+---------------------------------------- 
+
+ 2024-12-12 15:08:04.510668 
+
+ expert_safegil 
+
+ 0 
+
+ 50 
+
+ success rate: 0.0 
+
+ collision rate: 0.0 
+
+ not success rate: 0.0 
+
+ safe rate: 0.05 
+
+---------------------------------------- 
+
+ 2024-12-12 15:40:56.758458 
+
+ expert_safegil 
+
+ 0 
+
+ 50 
+
+ success rate: 0.9 
+
+ collision rate: 0.1 
+
+ not success rate: 0.0 
+
+ safe rate: 0.9 
+
+---------------------------------------- 
+
+ 2024-12-12 15:46:03.008695 
+
+ expert_safegil 
+
+ 0 
+
+ 50 
+
+ success rate: 0.94 
+
+ collision rate: 0.06 
+
+ not success rate: 0.0 
+
+ safe rate: 0.94 
