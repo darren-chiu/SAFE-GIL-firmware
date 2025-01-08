@@ -239,10 +239,10 @@ float clip(float n, float lower, float upper) {
 }
 
 // 0.3 radians to degrees
-float roll_upper = 3.0f * 180.0f / 3.14159265359f;
-float roll_lower = -3.0f * 180.0f / 3.14159265359f;
-float pitch_upper = 3.0f * 180.0f / 3.14159265359f;
-float pitch_lower = -3.0f * 180.0f / 3.14159265359f;
+float roll_upper = 10.0f; // 0.5f * 3.0f * 180.0f / 3.14159265359f;
+float roll_lower = 10.0f; //0.5f * -3.0f * 180.0f / 3.14159265359f;
+float pitch_upper = 10.0f; //0.5f * 3.0f * 180.0f / 3.14159265359f;
+float pitch_lower = 10.0f; // 0.5f * -3.0f * 180.0f / 3.14159265359f;
 
 
 static void positionSet(setpoint_t *setpoint, float x, float y, float z, float yaw)
@@ -415,7 +415,6 @@ void appMain() {
         DEBUG_PRINT("State: x:%f, y:%f, vx:%f, vy:%f\n", x, y, nn_input[0], nn_input[1]); // This debug print is necessary without safety filter
         // this debug print is necessary without safety filter
 
-
         if (counter > 1000 || x>4.10f || y>4.0f || z>0.7f || x<-0.7f || y<-4.0f || z < 0.2f){
           // stop the drone
           // DEBUG_PRINT("STOPPING\n");
@@ -432,7 +431,6 @@ void appMain() {
           DEBUG_PRINT("LANDING\n");
           DEBUG_PRINT("Counter: %d\n", counter);
 
-
           Land();
           
           vTaskDelay(1000);
@@ -440,7 +438,6 @@ void appMain() {
 
         }
         else{
-
 
           // modify the inputs
 
@@ -457,7 +454,7 @@ void appMain() {
           for (int i=0;i<8;i++) {
             nn_input[2+i] = ((roundf(obstacle_inputs[7-i] * 100) / 100) - 2.0f) / 2.0f; // for centered obs // TODO: CHECK THIS REVERSAL
           }
-          DEBUG_PRINT("Obstacle Inputs: %f, %f, %f, %f, %f, %f, %f, %f\n", nn_input[2], nn_input[3], nn_input[4], nn_input[5], nn_input[6], nn_input[7], nn_input[8], nn_input[9]); // This debug print is necessary without safety filter
+          DEBUG_PRINT("Obstacle Inputs: %f, %f, %f, %f, %f, %f, %f, %f\n", obstacle_inputs[0], obstacle_inputs[1], obstacle_inputs[2], obstacle_inputs[3], obstacle_inputs[4], obstacle_inputs[5], obstacle_inputs[6], obstacle_inputs[7]); // This debug print is necessary without safety filter
           // this debug print is necessary without safety filter
 
           #ifndef ENABLE_SAFETY_FILTER
@@ -466,11 +463,13 @@ void appMain() {
             // self.expert_actions_std = torch.tensor([1.293753e+03, 4.344000e+00, 3.436000e+00 ])
             // action_unnormalized = action * self.expert_actions_std + self.expert_actions_mean 
 
-            control_n.thrust_0 = control_n.thrust_0 * roll_upper;
-            control_n.thrust_1 = control_n.thrust_1 * pitch_upper;
+            control_n.thrust_0 = control_n.thrust_0 * 0.3f * 180.0f / 3.14159265359f;
+            control_n.thrust_1 = -1.0f * control_n.thrust_1 * 0.3f * 180.0f / 3.14159265359f;
             
             control_n.thrust_0 = clip(control_n.thrust_0, roll_lower, roll_upper);
             control_n.thrust_1 = clip(control_n.thrust_1, pitch_lower, pitch_upper);
+
+
           #endif
 
           #ifdef ENABLE_SAFETY_FILTER

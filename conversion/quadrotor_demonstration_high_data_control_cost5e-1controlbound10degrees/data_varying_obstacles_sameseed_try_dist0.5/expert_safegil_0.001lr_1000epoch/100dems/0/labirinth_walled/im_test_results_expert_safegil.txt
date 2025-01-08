@@ -1,0 +1,22 @@
+
+---------------------------------------- 
+
+ 2025-01-01 14:31:43.317683 
+
+ expert_safegil 
+
+ 0 
+
+ 100 
+
+ success rate: 0.73 
+
+ collision rate: 0.22 
+
+ not success rate: 0.05 
+
+ safe rate: 0.78 
+
+ mean max y: 3.5382210160822627 
+
+ se max y: 0.0780230631815897 
