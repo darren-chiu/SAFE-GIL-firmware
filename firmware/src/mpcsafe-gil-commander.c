@@ -240,9 +240,9 @@ float clip(float n, float lower, float upper) {
 
 // 0.3 radians to degrees
 float roll_upper = 10.0f; // 0.5f * 3.0f * 180.0f / 3.14159265359f;
-float roll_lower = 10.0f; //0.5f * -3.0f * 180.0f / 3.14159265359f;
+float roll_lower = -10.0f; //0.5f * -3.0f * 180.0f / 3.14159265359f;
 float pitch_upper = 10.0f; //0.5f * 3.0f * 180.0f / 3.14159265359f;
-float pitch_lower = 10.0f; // 0.5f * -3.0f * 180.0f / 3.14159265359f;
+float pitch_lower = -10.0f; // 0.5f * -3.0f * 180.0f / 3.14159265359f;
 
 
 static void positionSet(setpoint_t *setpoint, float x, float y, float z, float yaw)
@@ -415,7 +415,7 @@ void appMain() {
         DEBUG_PRINT("State: x:%f, y:%f, vx:%f, vy:%f\n", x, y, nn_input[0], nn_input[1]); // This debug print is necessary without safety filter
         // this debug print is necessary without safety filter
 
-        if (counter > 1000 || x>4.10f || y>4.0f || z>0.7f || x<-0.7f || y<-4.0f || z < 0.2f){
+        if (counter > 1000 || x>4.90f || y>4.0f || z>0.7f || x<-0.7f || y<-4.0f || z < 0.2f){
           // stop the drone
           // DEBUG_PRINT("STOPPING\n");
           for (int i = 0; i < 10; i++) {
@@ -464,11 +464,10 @@ void appMain() {
             // action_unnormalized = action * self.expert_actions_std + self.expert_actions_mean 
 
             control_n.thrust_0 = control_n.thrust_0 * 0.3f * 180.0f / 3.14159265359f;
-            control_n.thrust_1 = -1.0f * control_n.thrust_1 * 0.3f * 180.0f / 3.14159265359f;
+            control_n.thrust_1 =  -1.0f * control_n.thrust_1 * 0.3f * 180.0f / 3.14159265359f;
             
             control_n.thrust_0 = clip(control_n.thrust_0, roll_lower, roll_upper);
             control_n.thrust_1 = clip(control_n.thrust_1, pitch_lower, pitch_upper);
-
 
           #endif
 
